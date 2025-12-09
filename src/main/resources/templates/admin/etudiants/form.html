@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout :: layout(~{::content}, 'Étudiant')}">
+<body>
+    <div th:fragment="content">
+        <h1 class="mb-4">
+            <i class="bi bi-person-plus"></i>
+            <span th:text="${etudiant.id != null ? 'Modifier l''étudiant' : 'Nouvel étudiant'}"></span>
+        </h1>
+
+        <div class="card">
+            <div class="card-body">
+                <form th:action="${etudiant.id != null ? '/admin/etudiants/' + etudiant.id : '/admin/etudiants'}" 
+                      th:object="${etudiant}" method="post" class="row g-3">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <div class="col-md-6">
+                        <label class="form-label"><i class="bi bi-person"></i> Nom *</label>
+                        <input type="text" class="form-control" th:field="*{nom}" required placeholder="Entrez le nom">
+                        <div th:if="${#fields.hasErrors('nom')}" class="text-danger small mt-1" th:errors="*{nom}"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label"><i class="bi bi-person"></i> Prénom *</label>
+                        <input type="text" class="form-control" th:field="*{prenom}" required placeholder="Entrez le prénom">
+                        <div th:if="${#fields.hasErrors('prenom')}" class="text-danger small mt-1" th:errors="*{prenom}"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label"><i class="bi bi-envelope"></i> Email *</label>
+                        <input type="email" class="form-control" th:field="*{email}" required placeholder="exemple@email.com">
+                        <div th:if="${#fields.hasErrors('email')}" class="text-danger small mt-1" th:errors="*{email}"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label"><i class="bi bi-telephone"></i> Téléphone</label>
+                        <input type="text" class="form-control" th:field="*{telephone}" placeholder="+33 6 12 34 56 78">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label"><i class="bi bi-geo-alt"></i> Adresse</label>
+                        <textarea class="form-control" th:field="*{adresse}" rows="3" placeholder="Adresse complète"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label"><i class="bi bi-bookmark"></i> Section *</label>
+                        <select class="form-select" th:field="*{section}" required>
+                            <option value="">Sélectionnez une section</option>
+                            <option th:each="section : ${T(com.iit.projetjee.entity.Etudiant.Section).values()}" 
+                                    th:value="${section}" 
+                                    th:text="${section.libelle}"></option>
+                        </select>
+                        <div th:if="${#fields.hasErrors('section')}" class="text-danger small mt-1" th:errors="*{section}"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label"><i class="bi bi-person-badge"></i> Nom d'utilisateur *</label>
+                        <input type="text" class="form-control" th:field="*{username}" required placeholder="ex: prenom.nom">
+                        <div th:if="${#fields.hasErrors('username')}" class="text-danger small mt-1" th:errors="*{username}"></div>
+                        <small class="text-muted">Utilisé pour la connexion</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label"><i class="bi bi-lock"></i> Mot de passe <span th:if="${etudiant.id != null}" class="text-muted">(laisser vide pour ne pas modifier)</span><span th:if="${etudiant.id == null}">*</span></label>
+                        <input type="password" class="form-control" th:field="*{password}" 
+                               th:required="${etudiant.id == null}" 
+                               placeholder="Minimum 6 caractères">
+                        <div th:if="${#fields.hasErrors('password')}" class="text-danger small mt-1" th:errors="*{password}"></div>
+                        <small class="text-muted">Utilisé pour la connexion</small>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Enregistrer
+                        </button>
+                        <a href="/admin/etudiants" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Annuler
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

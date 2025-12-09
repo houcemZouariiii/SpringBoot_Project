@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${note.id != null ? 'Modifier la note' : 'Ajouter une note'}">Note</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/formateur/dashboard">
+                <i class="bi bi-mortarboard-fill"></i> <span class="brand-name">N&H Institut of Technology</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/formateur/dashboard">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/formateur/cours">
+                            <i class="bi bi-book"></i> Mes Cours
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/formateur/notes">
+                            <i class="bi bi-star"></i> Notes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">
+                            <i class="bi bi-box-arrow-right"></i> Déconnexion
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill"></i> <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="dashboard-header mb-4">
+            <h1>
+                <i class="bi bi-star"></i> 
+                <span th:text="${note.id != null ? 'Modifier la note' : 'Ajouter une note'}"></span>
+            </h1>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <form th:action="${note.id != null ? '/formateur/notes/' + note.id : '/formateur/notes'}" 
+                      th:object="${note}" method="post" class="row g-3" id="noteForm">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label"><i class="bi bi-book"></i> Cours *</label>
+                        <select class="form-select" id="coursSelect" th:field="*{cours}" required 
+                                th:disabled="${note.id != null}">
+                            <option value="">Sélectionner un cours</option>
+                            <option th:each="c : ${cours}" 
+                                    th:value="${c.id}" 
+                                    th:text="${c.titre}"
+                                    th:selected="${selectedCoursId != null && selectedCoursId == c.id}"></option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label"><i class="bi bi-person"></i> Étudiant *</label>
+                        <select class="form-select" id="etudiantSelect" name="etudiantId" required
+                                th:disabled="${note.id != null || (selectedCoursId == null)}">
+                            <option value="">Sélectionner d'abord un cours</option>
+                            <option th:if="${note.id != null}" 
+                                    th:value="${note.etudiant.id}" 
+                                    th:text="${note.etudiant.nomComplet}"
+                                    selected></option>
+                        </select>
+                        <small class="text-muted" id="etudiantHelp">Sélectionnez d'abord un cours pour voir les étudiants inscrits</small>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label"><i class="bi bi-star-fill"></i> Note (0-20) *</label>
+                        <input type="number" step="0.01" min="0" max="20" class="form-control" th:field="*{valeur}" required>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label"><i class="bi bi-tag"></i> Type d'évaluation</label>
+                        <input type="text" class="form-control" th:field="*{typeEvaluation}" 
+                               placeholder="Ex: Examen, Contrôle, TP, Projet">
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label"><i class="bi bi-calendar-event"></i> Date d'évaluation</label>
+                        <input type="date" class="form-control" th:field="*{dateEvaluation}">
+                    </div>
+                    
+                    <div class="col-12">
+                        <label class="form-label"><i class="bi bi-chat-left-text"></i> Commentaire</label>
+                        <textarea class="form-control" th:field="*{commentaire}" rows="3" 
+                                  placeholder="Commentaire optionnel..."></textarea>
+                    </div>
+                    
+                    <div class="col-12 mt-4">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success" id="submitBtn">
+                                <i class="bi bi-check-circle"></i> 
+                                <span th:text="${note.id != null ? 'Mettre à jour' : 'Ajouter la note'}"></span>
+                            </button>
+                            <a href="/formateur/notes" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Annuler
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const coursSelect = document.getElementById('coursSelect');
+        const etudiantSelect = document.getElementById('etudiantSelect');
+        const etudiantHelp = document.getElementById('etudiantHelp');
+        const selectedCoursId = /*[[${selectedCoursId}]]*/ null;
+        
+        // Charger les étudiants si un cours est pré-sélectionné
+        if (selectedCoursId) {
+            loadEtudiants(selectedCoursId);
+        }
+        
+        coursSelect.addEventListener('change', function() {
+            const coursId = this.value;
+            if (coursId) {
+                loadEtudiants(coursId);
+            } else {
+                etudiantSelect.innerHTML = '<option value="">Sélectionner d\'abord un cours</option>';
+                etudiantSelect.disabled = true;
+                etudiantHelp.textContent = 'Sélectionnez d\'abord un cours pour voir les étudiants inscrits';
+            }
+        });
+        
+        function loadEtudiants(coursId) {
+            etudiantSelect.disabled = true;
+            etudiantSelect.innerHTML = '<option value="">Chargement...</option>';
+            etudiantHelp.textContent = 'Chargement des étudiants...';
+            
+            fetch('/formateur/notes/cours/' + coursId + '/etudiants', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur HTTP: ' + response.status + ' ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(etudiants => {
+                    etudiantSelect.innerHTML = '<option value="">Sélectionner un étudiant</option>';
+                    if (etudiants && etudiants.length > 0) {
+                        etudiants.forEach(etudiant => {
+                            const option = document.createElement('option');
+                            option.value = etudiant.id;
+                            option.textContent = etudiant.nomComplet || (etudiant.prenom + ' ' + etudiant.nom);
+                            etudiantSelect.appendChild(option);
+                        });
+                        etudiantSelect.disabled = false;
+                        etudiantHelp.textContent = etudiants.length + ' étudiant(s) inscrit(s) à ce cours';
+                    } else {
+                        etudiantSelect.innerHTML = '<option value="">Aucun étudiant inscrit à ce cours</option>';
+                        etudiantSelect.disabled = false;
+                        etudiantHelp.textContent = 'Aucun étudiant inscrit à ce cours';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des étudiants:', error);
+                    etudiantSelect.innerHTML = '<option value="">Erreur lors du chargement</option>';
+                    etudiantSelect.disabled = false;
+                    etudiantHelp.textContent = 'Erreur lors du chargement des étudiants: ' + error.message;
+                });
+        }
+        
+        // Gestion de la soumission du formulaire
+        document.getElementById('noteForm').addEventListener('submit', function(e) {
+            const coursId = coursSelect.value;
+            const etudiantId = etudiantSelect.value;
+            
+            if (!coursId || !etudiantId) {
+                e.preventDefault();
+                alert('Veuillez sélectionner un cours et un étudiant.');
+                return false;
+            }
+            
+            // Ajouter les paramètres au formulaire
+            const hiddenCoursInput = document.createElement('input');
+            hiddenCoursInput.type = 'hidden';
+            hiddenCoursInput.name = 'coursId';
+            hiddenCoursInput.value = coursId;
+            this.appendChild(hiddenCoursInput);
+            
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Enregistrement...';
+        });
+        /*]]>*/
+    </script>
+</body>
+</html>
+

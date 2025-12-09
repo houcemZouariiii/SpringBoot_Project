@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  # H2 Database (for development - no external database needed)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: projetjee-app-dev
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb
+      SPRING_DATASOURCE_USERNAME: sa
+      SPRING_DATASOURCE_PASSWORD: 
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      JWT_SECRET: MySecretKeyForJWTTokenGeneration12345678901234567890
+      JWT_EXPIRATION: 86400000
+    ports:
+      - "8080:8080"
+    networks:
+      - projetjee-network
+    restart: unless-stopped
+
+networks:
+  projetjee-network:
+    driver: bridge
+

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Envoyer un Email - Formateur</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #2d5016 0%, #2d5016 100%);">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/formateur/dashboard">
+                <i class="bi bi-mortarboard-fill"></i> <span class="brand-name">N&H Institut of Technology</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/formateur/dashboard">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="bi bi-house"></i> Accueil
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">
+                            <i class="bi bi-box-arrow-right"></i> Déconnexion
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="dashboard-header fade-in">
+            <h1><i class="bi bi-envelope-paper"></i> Envoyer un Email</h1>
+            <p class="text-muted mb-0">Envoyez un message à vos étudiants</p>
+        </div>
+
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show mt-4" role="alert">
+            <i class="bi bi-check-circle-fill"></i> <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mt-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> <strong>Erreur :</strong> <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <hr>
+            <div class="mt-3">
+                <h6 class="alert-heading"><i class="bi bi-info-circle"></i> Solution pour Gmail :</h6>
+                <ol class="mb-0 small">
+                    <li><strong>Activez la validation en deux étapes</strong> sur votre compte Google</li>
+                    <li><strong>Créez une App Password</strong> : 
+                        <a href="https://myaccount.google.com/apppasswords" target="_blank" class="alert-link">
+                            https://myaccount.google.com/apppasswords
+                        </a>
+                    </li>
+                    <li><strong>Mettez à jour</strong> <code>application-dev.properties</code> avec l'App Password</li>
+                    <li><strong>Redémarrez</strong> l'application</li>
+                </ol>
+                <p class="mb-0 mt-2">
+                    <small>
+                        📖 Consultez <code>GMAIL_QUICK_FIX.md</code> pour un guide détaillé étape par étape.
+                    </small>
+                </p>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <form th:action="@{/formateur/emails/send}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <div class="mb-4">
+                        <label class="form-label"><i class="bi bi-people"></i> Destinataires (Vos étudiants)</label>
+                        <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto; background-color: #f7fafc;">
+                            <div th:if="${etudiants != null && !etudiants.isEmpty()}">
+                                <div th:each="etudiant : ${etudiants}" class="form-check mb-2">
+                                    <input class="form-check-input etudiant-checkbox" type="checkbox" 
+                                           name="etudiantIds" 
+                                           th:value="${etudiant.id}" 
+                                           th:id="'etudiant-' + ${etudiant.id}"
+                                           th:data-nom="${etudiant.nom}"
+                                           th:data-prenom="${etudiant.prenom}"
+                                           th:data-email="${etudiant.email}"
+                                           th:data-section="${etudiant.section != null ? etudiant.section.libelle : ''}"
+                                           th:data-nom-complet="${etudiant.nomComplet}">
+                                    <label class="form-check-label" th:for="'etudiant-' + ${etudiant.id}">
+                                        <strong th:text="${etudiant.nomComplet}"></strong>
+                                        <span class="text-muted" th:text="'(' + ${etudiant.email} + ')'"></span>
+                                        <span th:if="${etudiant.section != null}" 
+                                              class="badge bg-info ms-2" 
+                                              th:text="${etudiant.section.libelle}"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <p th:if="${etudiants == null || etudiants.isEmpty()}" class="text-muted mb-0">
+                                Aucun étudiant inscrit à vos cours pour le moment.
+                            </p>
+                        </div>
+                        <small class="text-muted">Sélectionnez un ou plusieurs étudiants</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-envelope"></i> Ou envoyez à un email spécifique</label>
+                        <input type="email" class="form-control" name="emailTo" 
+                               placeholder="exemple@email.com">
+                        <small class="text-muted">Laissez vide si vous avez sélectionné des étudiants ci-dessus</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-card-heading"></i> Sujet *</label>
+                        <input type="text" class="form-control" name="subject" required 
+                               placeholder="Sujet de l'email">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label"><i class="bi bi-chat-left-text"></i> Message *</label>
+                        <textarea class="form-control" name="message" rows="10" required 
+                                  placeholder="Votre message..."></textarea>
+                        <small class="text-muted">Vous pouvez utiliser du HTML pour formater votre message</small>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success" id="sendEmailBtn">
+                            <i class="bi bi-send"></i> Envoyer l'Email
+                        </button>
+                        <a href="/formateur/dashboard" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Annuler
+                        </a>
+                    </div>
+                </form>
+                
+                <script>
+                    // Fonction pour remplir automatiquement le formulaire avec les infos de l'étudiant
+                    function autoFillForm() {
+                        const checkboxes = document.querySelectorAll('input[name="etudiantIds"]:checked');
+                        const emailToInput = document.querySelector('input[name="emailTo"]');
+                        const subjectInput = document.querySelector('input[name="subject"]');
+                        const messageInput = document.querySelector('textarea[name="message"]');
+                        
+                        if (checkboxes.length === 0) {
+                            // Aucun étudiant sélectionné, réinitialiser
+                            if (subjectInput.value.includes('Cher') || subjectInput.value.includes('Message')) {
+                                emailToInput.value = '';
+                                subjectInput.value = '';
+                                messageInput.value = '';
+                            }
+                            return;
+                        }
+                        
+                        if (checkboxes.length === 1) {
+                            // Un seul étudiant sélectionné, remplir avec ses infos
+                            const checkbox = checkboxes[0];
+                            const prenom = checkbox.dataset.prenom || '';
+                            const nom = checkbox.dataset.nom || '';
+                            const nomComplet = checkbox.dataset.nomComplet || (prenom + ' ' + nom);
+                            const email = checkbox.dataset.email || '';
+                            const section = checkbox.dataset.section || '';
+                            
+                            // Remplir l'email automatiquement
+                            emailToInput.value = email;
+                            
+                            // Remplir le sujet si vide ou s'il contient un template
+                            if (!subjectInput.value || subjectInput.value.includes('Cher') || subjectInput.value.trim() === '') {
+                                subjectInput.value = 'Message pour ' + nomComplet;
+                            }
+                            
+                            // Remplir le message si vide ou s'il contient un template
+                            if (!messageInput.value || messageInput.value.includes('Bonjour') || messageInput.value.trim() === '') {
+                                let message = 'Bonjour ' + prenom + ',\n\n';
+                                if (section) {
+                                    message += 'J\'espère que vous allez bien dans votre parcours en ' + section + '.\n\n';
+                                }
+                                message += 'Je souhaite vous contacter concernant votre parcours académique.\n\n';
+                                message += 'Cordialement';
+                                messageInput.value = message;
+                            }
+                        } else {
+                            // Plusieurs étudiants sélectionnés, vider le champ email et utiliser template générique
+                            emailToInput.value = '';
+                            
+                            if (!subjectInput.value || subjectInput.value.includes('Cher') || subjectInput.value.trim() === '') {
+                                subjectInput.value = 'Message aux étudiants';
+                            }
+                            
+                            if (!messageInput.value || messageInput.value.includes('Bonjour') || messageInput.value.trim() === '') {
+                                messageInput.value = 'Bonjour,\n\nJe souhaite vous contacter concernant votre parcours académique.\n\nCordialement';
+                            }
+                        }
+                    }
+                    
+                    // Écouter les changements sur les checkboxes
+                    document.querySelectorAll('.etudiant-checkbox').forEach(checkbox => {
+                        checkbox.addEventListener('change', autoFillForm);
+                    });
+                    
+                    // Validation avant envoi
+                    document.querySelector('form').addEventListener('submit', function(e) {
+                        const checkboxes = document.querySelectorAll('input[name="etudiantIds"]:checked');
+                        const emailTo = document.querySelector('input[name="emailTo"]').value.trim();
+                        
+                        if (checkboxes.length === 0 && (!emailTo || emailTo === '')) {
+                            e.preventDefault();
+                            alert('Veuillez sélectionner au moins un destinataire ou entrer un email.');
+                            return false;
+                        }
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout :: layout(~{::content}, 'Dashboard')}">
+<head>
+    <title>Dashboard - Admin</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="dashboard-header fade-in">
+            <div class="d-flex align-items-center mb-2">
+                <div style="width: 4px; height: 40px; background: linear-gradient(135deg, #2563eb, #059669); border-radius: 2px; margin-right: 1rem;"></div>
+                <div>
+                    <h1 class="mb-0"><i class="bi bi-speedometer2"></i> Tableau de bord</h1>
+                    <p class="text-muted mb-0">Vue d'ensemble de votre système de gestion éducative</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-md-3 mb-4">
+                <div class="stat-card bg-primary">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-people"></i> Étudiants</h5>
+                        <h2 th:text="${nombreEtudiants}">0</h2>
+                        <small style="opacity: 0.8;">Total inscrits</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stat-card bg-success">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-person-badge"></i> Formateurs</h5>
+                        <h2 th:text="${nombreFormateurs}">0</h2>
+                        <small style="opacity: 0.8;">Total actifs</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stat-card bg-info">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-book"></i> Cours</h5>
+                        <h2 th:text="${nombreCours}">0</h2>
+                        <small style="opacity: 0.8;">Cours disponibles</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stat-card bg-warning">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-clipboard-check"></i> Inscriptions</h5>
+                        <h2 th:text="${nombreInscriptions}">0</h2>
+                        <small style="opacity: 0.8;">En attente</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-lightning-charge"></i> Actions rapides</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            <div class="col-md-3 col-sm-6">
+                                <a href="/admin/etudiants/new" class="btn btn-primary btn-sm w-100">
+                                    <i class="bi bi-person-plus"></i> <span>Nouvel étudiant</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <a href="/admin/formateurs/new" class="btn btn-success btn-sm w-100">
+                                    <i class="bi bi-person-badge"></i> <span>Nouveau formateur</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <a href="/admin/cours/new" class="btn btn-info btn-sm w-100">
+                                    <i class="bi bi-book-half"></i> <span>Nouveau cours</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <a href="/admin/emails/send" class="btn btn-warning btn-sm w-100">
+                                    <i class="bi bi-envelope-paper"></i> <span>Envoyer Email</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-link-45deg"></i> Liens rapides</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <a href="/admin/etudiants" class="text-decoration-none">
+                                    <i class="bi bi-people text-primary"></i> Gérer les étudiants
+                                </a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="/admin/formateurs" class="text-decoration-none">
+                                    <i class="bi bi-person-badge text-success"></i> Gérer les formateurs
+                                </a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="/admin/cours" class="text-decoration-none">
+                                    <i class="bi bi-book text-info"></i> Gérer les cours
+                                </a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="/admin/inscriptions" class="text-decoration-none">
+                                    <i class="bi bi-clipboard-check text-warning"></i> Gérer les inscriptions
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/admin/notes" class="text-decoration-none">
+                                    <i class="bi bi-star text-danger"></i> Gérer les notes
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

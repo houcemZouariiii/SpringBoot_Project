@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout :: layout(~{::content}, 'Sessions académiques')}">
+<body>
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1><i class="bi bi-calendar-week"></i> Sessions académiques</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th>Libellé</th>
+                                <th>Année</th>
+                                <th>Semestre</th>
+                                <th>Actif</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="s : ${sessions}">
+                                <td th:text="${s.libelle}"></td>
+                                <td th:text="${s.annee}"></td>
+                                <td th:text="${s.semestre}"></td>
+                                <td>
+                                    <span class="badge" th:classappend="${s.actif} ? 'bg-success' : 'bg-secondary'"
+                                          th:text="${s.actif ? 'Oui' : 'Non'}"></span>
+                                </td>
+                                <td>
+                                    <form th:action="@{'/admin/sessions/' + ${s.id}}" method="post" class="d-inline">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                        <input type="text" class="form-control form-control-sm mb-1" name="libelle" th:value="${s.libelle}" required>
+                                        <input type="number" class="form-control form-control-sm mb-1" name="annee" th:value="${s.annee}" required>
+                                        <select class="form-select form-select-sm mb-1" name="semestre">
+                                            <option th:each="sem : ${semestres}" th:value="${sem}" th:selected="${sem == s.semestre}" th:text="${sem}"></option>
+                                        </select>
+                                        <div class="form-check form-switch mb-1">
+                                            <input class="form-check-input" type="checkbox" name="actif" th:checked="${s.actif}">
+                                            <label class="form-check-label">Actif</label>
+                                        </div>
+                                        <button class="btn btn-sm btn-warning"><i class="bi bi-save"></i></button>
+                                    </form>
+                                    <form th:action="@{'/admin/sessions/' + ${s.id} + '/delete'}" method="post" class="d-inline ms-1">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                        <button class="btn btn-sm btn-danger" onclick="return confirm('Supprimer ?')"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Nouvelle session</h5>
+                    <form action="/admin/sessions" method="post" class="row g-2">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <div class="col-12">
+                            <label class="form-label">Libellé</label>
+                            <input type="text" class="form-control" name="libelle" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Année</label>
+                            <input type="number" class="form-control" name="annee" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Semestre</label>
+                            <select class="form-select" name="semestre">
+                                <option th:each="sem : ${semestres}" th:value="${sem}" th:text="${sem}"></option>
+                            </select>
+                        </div>
+                        <div class="col-12 form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="actif" checked>
+                            <label class="form-check-label">Actif</label>
+                        </div>
+                        <div class="col-12 d-flex justify-content-end">
+                            <button class="btn btn-primary"><i class="bi bi-plus-circle"></i> Enregistrer</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

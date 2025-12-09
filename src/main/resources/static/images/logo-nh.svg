@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#d4af37;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#f4d03f;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d4af37;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="navyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a365d;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2c5282;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="95" fill="url(#navyGradient)" opacity="0.1"/>
+  
+  <!-- Academic Cap (Mortarboard) -->
+  <g transform="translate(100, 60)">
+    <!-- Cap Base -->
+    <path d="M -50 0 L -30 15 L 30 15 L 50 0 Z" fill="url(#goldGradient)" stroke="#1a365d" stroke-width="1.5"/>
+    <!-- Cap Top -->
+    <ellipse cx="0" cy="0" rx="50" ry="8" fill="url(#goldGradient)" stroke="#1a365d" stroke-width="1.5"/>
+    <!-- Tassel -->
+    <line x1="30" y1="15" x2="30" y2="35" stroke="url(#goldGradient)" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="30" cy="35" r="3" fill="url(#goldGradient)"/>
+  </g>
+  
+  <!-- Letter N -->
+  <g transform="translate(60, 110)">
+    <path d="M 0 0 L 0 50 L 8 50 L 8 15 L 32 50 L 40 50 L 40 0 L 32 0 L 32 35 L 8 0 Z" 
+          fill="url(#navyGradient)" filter="url(#glow)"/>
+  </g>
+  
+  <!-- Ampersand -->
+  <g transform="translate(100, 110)">
+    <path d="M 20 25 Q 20 15 15 10 Q 10 5 5 5 Q 0 5 -5 10 Q -10 15 -10 25 Q -10 35 -5 40 Q 0 45 5 45 Q 10 45 12 43 L 12 50 L 20 50 Z M 5 10 Q 8 10 10 12 Q 12 14 12 18 Q 12 22 10 24 Q 8 26 5 26 Q 2 26 0 24 Q -2 22 -2 18 Q -2 14 0 12 Q 2 10 5 10 Z" 
+          fill="url(#goldGradient)" filter="url(#glow)"/>
+  </g>
+  
+  <!-- Letter H -->
+  <g transform="translate(140, 110)">
+    <path d="M 0 0 L 0 50 L 8 50 L 8 28 L 32 28 L 32 50 L 40 50 L 40 0 L 32 0 L 32 20 L 8 20 L 8 0 Z" 
+          fill="url(#navyGradient)" filter="url(#glow)"/>
+  </g>
+  
+  <!-- Decorative Elements -->
+  <circle cx="50" cy="50" r="3" fill="url(#goldGradient)" opacity="0.6"/>
+  <circle cx="150" cy="50" r="3" fill="url(#goldGradient)" opacity="0.6"/>
+  <circle cx="50" cy="150" r="3" fill="url(#goldGradient)" opacity="0.6"/>
+  <circle cx="150" cy="150" r="3" fill="url(#goldGradient)" opacity="0.6"/>
+</svg>
+

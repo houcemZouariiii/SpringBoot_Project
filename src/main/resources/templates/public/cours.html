@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cours - N&H Institut of Technology</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-mortarboard-fill"></i> <span class="brand-name">N&H Institut of Technology</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="bi bi-house-door"></i> Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/public/formateurs"><i class="bi bi-person-badge"></i> Formateurs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/public/cours"><i class="bi bi-book"></i> Cours</a>
+                    </li>
+                    <li sec:authorize="isAuthenticated()" class="nav-item">
+                        <a class="nav-link" href="/logout"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
+                    </li>
+                    <li sec:authorize="!isAuthenticated()" class="nav-item">
+                        <a class="nav-link" href="/login"><i class="bi bi-box-arrow-in-right"></i> Connexion</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="dashboard-header fade-in">
+            <h1><i class="bi bi-book-fill"></i> Nos Cours</h1>
+            <p class="text-muted mb-0">Explorez notre catalogue de formations</p>
+        </div>
+
+        <div class="card mb-4 mt-4">
+            <div class="card-body">
+                <form method="get" class="mb-0">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" name="search" class="form-control" placeholder="Rechercher un cours par titre, description ou formateur..." th:value="${search}">
+                        <button class="btn btn-info" type="submit">
+                            <i class="bi bi-search"></i> Rechercher
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row">
+            <div th:each="cours : ${cours}" class="col-md-6 mb-4">
+                <div class="card feature-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h5 class="card-title mb-1" th:text="${cours.titre}"></h5>
+                                <span class="badge badge-education" th:if="${cours.niveau}" th:text="${cours.niveau}"></span>
+                            </div>
+                            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #2563eb, #3b82f6); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                <i class="bi bi-book-half text-white" style="font-size: 1.8rem;"></i>
+                            </div>
+                        </div>
+                        <p class="text-muted mb-3" th:if="${cours.description}" th:text="${cours.description}"></p>
+                        <div class="row text-muted small mb-3">
+                            <div class="col-6 mb-2">
+                                <i class="bi bi-clock text-info"></i> <span th:text="${cours.nombreHeures + ' heures'}"></span>
+                            </div>
+                            <div class="col-12 mb-2" th:if="${cours.formateur}">
+                                <i class="bi bi-person-badge text-primary"></i> Formateur : <span th:text="${cours.formateur.nomComplet}"></span>
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-3 border-top" sec:authorize="hasAnyRole('ADMIN', 'FORMATEUR')">
+                            <div th:if="${cours.prix != null && cours.prix > 0}" class="price-display">
+                                <span class="price-amount" th:text="${#numbers.formatDecimal(cours.prix, 1, 2)}"></span>
+                                <span class="price-currency">DT</span>
+                            </div>
+                            <div th:if="${cours.prix == null || cours.prix == 0}" class="text-center">
+                                <span class="badge bg-success">
+                                    <i class="bi bi-gift"></i> Gratuit
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(cours)}" class="text-center py-5">
+            <i class="bi bi-inbox" style="font-size: 4rem; color: #cbd5e1;"></i>
+            <p class="text-muted mt-3">Aucun cours trouvé</p>
+        </div>
+    </div>
+
+    <footer class="text-center text-white py-4 mt-5">
+        <div class="container">
+                    <p class="mb-0">&copy; 2025 N&H Institut of Technology - Plateforme Éducative</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

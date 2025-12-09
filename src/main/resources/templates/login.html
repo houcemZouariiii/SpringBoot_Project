@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - N&H Institut of Technology</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="login-page-body">
+    <div class="login-wrapper">
+        <!-- Left Side - Branding & Visual -->
+        <div class="login-branding">
+            <div class="login-branding-content">
+                <div class="university-logo-container">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" class="university-logo">
+                        <defs>
+                            <linearGradient id="logoGoldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#d4af37;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#f4d03f;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#d4af37;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="logoNavyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:rgb(255, 255, 255), 128, 255);stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:rgb(192, 192, 192), 128, 255), 180, 194);stop-opacity:1" />
+                            </linearGradient>
+                            <filter id="logoGlow">
+                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        
+                        <!-- Background Circle -->
+                        <circle cx="100" cy="100" r="95" fill="url(#logoNavyGradient)" opacity="0.1"/>
+                        
+                        <!-- Academic Cap (Mortarboard) -->
+                        <g transform="translate(100, 60)">
+                            <path d="M -50 0 L -30 15 L 30 15 L 50 0 Z" fill="url(#logoGoldGradient)" stroke="#1a365d" stroke-width="1.5"/>
+                            <ellipse cx="0" cy="0" rx="50" ry="8" fill="url(#logoGoldGradient)" stroke="#1a365d" stroke-width="1.5"/>
+                            <line x1="30" y1="15" x2="30" y2="35" stroke="url(#logoGoldGradient)" stroke-width="2" stroke-linecap="round"/>
+                            <circle cx="30" cy="35" r="3" fill="url(#logoGoldGradient)"/>
+                        </g>
+                        
+                        <!-- Letter N -->
+                        <g transform="translate(60, 110)">
+                            <path d="M 0 0 L 0 50 L 8 50 L 8 15 L 32 50 L 40 50 L 40 0 L 32 0 L 32 35 L 8 0 Z" 
+                                  fill="url(#logoNavyGradient)" filter="url(#logoGlow)"/>
+                        </g>
+                        
+                        <!-- Ampersand -->
+                        <g transform="translate(100, 110)">
+                            <path d="M 20 25 Q 20 15 15 10 Q 10 5 5 5 Q 0 5 -5 10 Q -10 15 -10 25 Q -10 35 -5 40 Q 0 45 5 45 Q 10 45 12 43 L 12 50 L 20 50 Z M 5 10 Q 8 10 10 12 Q 12 14 12 18 Q 12 22 10 24 Q 8 26 5 26 Q 2 26 0 24 Q -2 22 -2 18 Q -2 14 0 12 Q 2 10 5 10 Z" 
+                                  fill="url(#logoGoldGradient)" filter="url(#logoGlow)"/>
+                        </g>
+                        
+                        <!-- Letter H -->
+                        <g transform="translate(140, 110)">
+                            <path d="M 0 0 L 0 50 L 8 50 L 8 28 L 32 28 L 32 50 L 40 50 L 40 0 L 32 0 L 32 20 L 8 20 L 8 0 Z" 
+                                  fill="url(#logoNavyGradient)" filter="url(#logoGlow)"/>
+                        </g>
+                        
+                        <!-- Decorative Elements -->
+                        <circle cx="50" cy="50" r="3" fill="url(#logoGoldGradient)" opacity="0.6"/>
+                        <circle cx="150" cy="50" r="3" fill="url(#logoGoldGradient)" opacity="0.6"/>
+                        <circle cx="50" cy="150" r="3" fill="url(#logoGoldGradient)" opacity="0.6"/>
+                        <circle cx="150" cy="150" r="3" fill="url(#logoGoldGradient)" opacity="0.6"/>
+                    </svg>
+                </div>
+                <h1 class="university-name">N&H Institut<br>of Technology</h1>
+                <p class="university-tagline">Excellence académique et innovation pédagogique</p>
+                <div class="university-features">
+                    <div class="feature-item">
+                        <i class="bi bi-award-fill"></i>
+                        <span>Excellence académique</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="bi bi-lightbulb-fill"></i>
+                        <span>Innovation pédagogique</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Communauté dynamique</span>
+                    </div>
+                </div>
+            </div>
+            <div class="login-branding-decoration"></div>
+        </div>
+
+        <!-- Right Side - Login Form -->
+        <div class="login-form-container">
+            <div class="login-card">
+                <div class="login-header">
+                    <h2>Bienvenue</h2>
+                    <p>Connectez-vous à votre espace académique</p>
+                </div>
+                
+                <div th:if="${param.error}" class="alert alert-danger alert-custom">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <span>Nom d'utilisateur ou mot de passe incorrect.</span>
+                </div>
+                <div th:if="${param.logout}" class="alert alert-success alert-custom">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>Vous avez été déconnecté avec succès.</span>
+                </div>
+                
+                <form th:action="@{/login}" method="post" class="login-form">
+                    <div class="form-group-custom">
+                        <label for="username" class="form-label-custom">
+                            <i class="bi bi-person-fill"></i>
+                            <span>Nom d'utilisateur</span>
+                        </label>
+                        <input type="text" 
+                               class="form-control-custom" 
+                               id="username" 
+                               name="username" 
+                               required 
+                               autofocus 
+                               placeholder="Entrez votre nom d'utilisateur">
+                    </div>
+                    
+                    <div class="form-group-custom">
+                        <label for="password" class="form-label-custom">
+                            <i class="bi bi-lock-fill"></i>
+                            <span>Mot de passe</span>
+                        </label>
+                        <input type="password" 
+                               class="form-control-custom" 
+                               id="password" 
+                               name="password" 
+                               required 
+                               placeholder="Entrez votre mot de passe">
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn-login">
+                            <span>Se connecter</span>
+                            <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="login-footer">
+                    <a href="/" class="back-home-link">
+                        <i class="bi bi-arrow-left"></i>
+                        <span>Retour à l'accueil</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

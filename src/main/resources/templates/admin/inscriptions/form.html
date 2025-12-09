@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout :: layout(~{::content}, 'Inscription')}">
+<body>
+    <div th:fragment="content">
+        <div class="dashboard-header mb-4">
+            <h1><i class="bi bi-clipboard-check"></i> Nouvelle inscription</h1>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <form th:action="/admin/inscriptions" th:object="${inscription}" method="post" class="row g-3" id="inscriptionForm">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label"><i class="bi bi-person"></i> Étudiant *</label>
+                        <select class="form-select" th:field="*{etudiant}" required id="etudiantSelect">
+                            <option value="">Sélectionner un étudiant</option>
+                            <option th:each="etudiant : ${etudiants}" 
+                                    th:value="${etudiant.id}" 
+                                    th:text="${etudiant.nomComplet}"></option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label"><i class="bi bi-book"></i> Cours *</label>
+                        <select class="form-select" th:field="*{cours}" required id="coursSelect">
+                            <option value="">Sélectionner un cours</option>
+                            <option th:each="cours : ${cours}" 
+                                    th:value="${cours.id}" 
+                                    th:text="${cours.titre}"></option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label"><i class="bi bi-info-circle"></i> Statut</label>
+                        <select class="form-select" th:field="*{statut}" id="statutSelect">
+                            <option th:each="statut : ${statuts}" 
+                                    th:value="${statut}" 
+                                    th:text="${statut}"></option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-12">
+                        <label class="form-label"><i class="bi bi-chat-left-text"></i> Commentaire</label>
+                        <textarea class="form-control" th:field="*{commentaire}" rows="3" placeholder="Commentaire optionnel..."></textarea>
+                    </div>
+                    
+                    <div class="col-12 mt-4">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-warning" id="submitBtn">
+                                <i class="bi bi-check-circle"></i> Enregistrer l'inscription
+                            </button>
+                            <a href="/admin/inscriptions" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Annuler
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <script>
+            // Validation et feedback visuel
+            document.getElementById('inscriptionForm').addEventListener('submit', function(e) {
+                const etudiant = document.getElementById('etudiantSelect').value;
+                const cours = document.getElementById('coursSelect').value;
+                
+                if (!etudiant || !cours) {
+                    e.preventDefault();
+                    alert('Veuillez sélectionner un étudiant et un cours.');
+                    return false;
+                }
+                
+                // Désactiver le bouton pendant l'envoi
+                const submitBtn = document.getElementById('submitBtn');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Enregistrement...';
+            });
+        </script>
+    </div>
+</body>
+</html>
+

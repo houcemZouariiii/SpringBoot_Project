@@ -1,0 +1,252 @@
+package com.iit.projetjee.service;
+
+import com.iit.projetjee.entity.Cours;
+import com.iit.projetjee.entity.Etudiant;
+import com.iit.projetjee.entity.Inscription;
+import com.iit.projetjee.exception.ResourceNotFoundException;
+import com.iit.projetjee.repository.CoursRepository;
+import com.iit.projetjee.repository.EtudiantRepository;
+import com.iit.projetjee.repository.InscriptionRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.List;
+
+@Service
+@Transactional
+public class InscriptionService {
+
+    private final InscriptionRepository inscriptionRepository;
+    private final EtudiantRepository etudiantRepository;
+    private final CoursRepository coursRepository;
+    private final CoursService coursService;
+    private final EmailService emailService;
+
+    @Autowired
+    public InscriptionService(InscriptionRepository inscriptionRepository,
+                             EtudiantRepository etudiantRepository,
+                             CoursRepository coursRepository,
+                             CoursService coursService,
+                             EmailService emailService) {
+        this.inscriptionRepository = inscriptionRepository;
+        this.etudiantRepository = etudiantRepository;
+        this.coursRepository = coursRepository;
+        this.coursService = coursService;
+        this.emailService = emailService;
+    }
+
+    // Créer une inscription
+    public Inscription createInscription(Inscription inscription) {
+        // Vérifier que l'étudiant existe
+        if (inscription.getEtudiant() != null && inscription.getEtudiant().getId() != null) {
+            Etudiant etudiant = etudiantRepository.findById(inscription.getEtudiant().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Étudiant non trouvé"));
+            inscription.setEtudiant(etudiant);
+        }
+        
+        // Vérifier que le cours existe
+        if (inscription.getCours() != null && inscription.getCours().getId() != null) {
+            Cours cours = coursRepository.findById(inscription.getCours().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Cours non trouvé"));
+            inscription.setCours(cours);
+        }
+        
+        // Vérifier si l'étudiant n'est pas déjà inscrit
+        if (inscriptionRepository.existsByEtudiantAndCours(inscription.getEtudiant(), inscription.getCours())) {
+            throw new IllegalArgumentException("L'étudiant est déjà inscrit à ce cours");
+        }
+        
+        // Vérifier les conflits d'horaires
+        if (hasConflitHoraires(inscription.getEtudiant().getId(), inscription.getCours().getId())) {
+            throw new IllegalStateException("Conflit d'horaires : l'étudiant a déjà un cours à cette période");
+        }
+        
+        if (inscription.getDateInscription() == null) {
+            inscription.setDateInscription(LocalDate.now());
+        }
+        
+        Inscription saved = inscriptionRepository.save(inscription);
+
+        // Notifications email
+        try {
+            emailService.sendInscriptionConfirmation(
+                    inscription.getEtudiant().getEmail(),
+                    inscription.getEtudiant().getNomComplet(),
+                    inscription.getCours().getTitre()
+            );
+            if (inscription.getCours().getFormateur() != null && inscription.getCours().getFormateur().getEmail() != null) {
+                emailService.sendInscriptionNotificationFormateur(
+                        inscription.getCours().getFormateur().getEmail(),
+                        inscription.getEtudiant().getNomComplet(),
+                        inscription.getCours().getTitre(),
+                        false);
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de l'envoi de l'email : " + e.getMessage());
+        }
+
+        return saved;
+    }
+
+    // S'inscrire à un cours
+    public Inscription sInscrireACours(Long etudiantId, Long coursId) {
+        Etudiant etudiant = etudiantRepository.findById(etudiantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Étudiant non trouvé avec l'ID : " + etudiantId));
+        
+        Cours cours = coursRepository.findById(coursId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cours non trouvé avec l'ID : " + coursId));
+        
+        // Vérifier si déjà inscrit
+        if (inscriptionRepository.existsByEtudiantAndCours(etudiant, cours)) {
+            throw new IllegalArgumentException("L'étudiant est déjà inscrit à ce cours");
+        }
+        
+        // Vérifier les conflits d'horaires
+        if (hasConflitHoraires(etudiantId, coursId)) {
+            throw new IllegalStateException("Conflit d'horaires : l'étudiant a déjà un cours à cette période");
+        }
+        
+        Inscription inscription = new Inscription(etudiant, cours);
+        inscription.setStatut(Inscription.StatutInscription.EN_ATTENTE);
+        
+        Inscription savedInscription = inscriptionRepository.save(inscription);
+        
+        // Envoyer un email de confirmation
+        try {
+            emailService.sendInscriptionConfirmation(
+                etudiant.getEmail(), 
+                etudiant.getNomComplet(), 
+                cours.getTitre()
+            );
+            if (cours.getFormateur() != null && cours.getFormateur().getEmail() != null) {
+                emailService.sendInscriptionNotificationFormateur(
+                        cours.getFormateur().getEmail(),
+                        etudiant.getNomComplet(),
+                        cours.getTitre(),
+                        false);
+            }
+        } catch (Exception e) {
+            // Logger l'erreur mais ne pas faire échouer l'inscription
+            System.err.println("Erreur lors de l'envoi de l'email : " + e.getMessage());
+        }
+        
+        return savedInscription;
+    }
+
+    // Obtenir toutes les inscriptions
+    public List<Inscription> getAllInscriptions() {
+        return inscriptionRepository.findAll();
+    }
+
+    // Obtenir une inscription par ID
+    public Inscription getInscriptionById(Long id) {
+        return inscriptionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Inscription non trouvée avec l'ID : " + id));
+    }
+
+    // Mettre à jour une inscription
+    public Inscription updateInscription(Long id, Inscription inscriptionDetails) {
+        Inscription inscription = getInscriptionById(id);
+        
+        inscription.setStatut(inscriptionDetails.getStatut());
+        inscription.setCommentaire(inscriptionDetails.getCommentaire());
+        
+        return inscriptionRepository.save(inscription);
+    }
+
+    // Supprimer une inscription
+    public void deleteInscription(Long id) {
+        Inscription inscription = getInscriptionById(id);
+        String etudiantNom = inscription.getEtudiant().getNomComplet();
+        String coursTitre = inscription.getCours().getTitre();
+        String formateurEmail = inscription.getCours().getFormateur() != null ? inscription.getCours().getFormateur().getEmail() : null;
+        inscriptionRepository.delete(inscription);
+        try {
+            if (formateurEmail != null) {
+                emailService.sendInscriptionNotificationFormateur(
+                        formateurEmail,
+                        etudiantNom,
+                        coursTitre,
+                        true);
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de l'envoi de l'email de désinscription : " + e.getMessage());
+        }
+    }
+
+    // Obtenir les inscriptions d'un étudiant
+    public List<Inscription> getInscriptionsByEtudiant(Long etudiantId) {
+        return inscriptionRepository.findByEtudiantId(etudiantId);
+    }
+
+    // Obtenir les inscriptions d'un cours
+    public List<Inscription> getInscriptionsByCours(Long coursId) {
+        return inscriptionRepository.findByCoursId(coursId);
+    }
+    
+    // Obtenir les inscriptions d'un cours avec les étudiants chargés
+    public List<Inscription> getInscriptionsByCoursWithEtudiant(Long coursId) {
+        return inscriptionRepository.findByCoursIdWithEtudiant(coursId);
+    }
+
+    // Valider une inscription
+    public Inscription validerInscription(Long id) {
+        Inscription inscription = getInscriptionById(id);
+        inscription.setStatut(Inscription.StatutInscription.VALIDEE);
+        Inscription savedInscription = inscriptionRepository.save(inscription);
+        
+        // Envoyer un email de validation
+        try {
+            emailService.sendInscriptionValidation(
+                inscription.getEtudiant().getEmail(),
+                inscription.getEtudiant().getNomComplet(),
+                inscription.getCours().getTitre()
+            );
+        } catch (Exception e) {
+            System.err.println("Erreur lors de l'envoi de l'email : " + e.getMessage());
+        }
+        
+        return savedInscription;
+    }
+
+    // Refuser une inscription
+    public Inscription refuserInscription(Long id) {
+        Inscription inscription = getInscriptionById(id);
+        inscription.setStatut(Inscription.StatutInscription.REFUSEE);
+        return inscriptionRepository.save(inscription);
+    }
+
+    // Vérifier les conflits d'horaires pour un étudiant
+    private boolean hasConflitHoraires(Long etudiantId, Long coursId) {
+        Cours nouveauCours = coursRepository.findById(coursId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cours non trouvé"));
+        
+        if (nouveauCours.getDateDebut() == null || nouveauCours.getDateFin() == null) {
+            return false; // Pas de dates, pas de conflit possible
+        }
+        
+        List<Inscription> inscriptions = inscriptionRepository.findByEtudiantId(etudiantId);
+        
+        for (Inscription inscription : inscriptions) {
+            if (inscription.getStatut() != Inscription.StatutInscription.VALIDEE) {
+                continue; // Ne considérer que les inscriptions validées
+            }
+            
+            Cours coursExistant = inscription.getCours();
+            if (coursExistant.getDateDebut() != null && coursExistant.getDateFin() != null) {
+                // Vérifier si les périodes se chevauchent
+                boolean chevauchement = !(nouveauCours.getDateFin().isBefore(coursExistant.getDateDebut()) || 
+                                        nouveauCours.getDateDebut().isAfter(coursExistant.getDateFin()));
+                
+                if (chevauchement) {
+                    return true; // Conflit détecté
+                }
+            }
+        }
+        
+        return false; // Pas de conflit
+    }
+}
+
