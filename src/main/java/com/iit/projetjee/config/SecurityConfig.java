@@ -10,8 +10,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import com.iit.projetjee.filter.XssFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -21,14 +24,17 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomAuthenticationSuccessHandler authenticationSuccessHandler;
     private final CustomUserDetailsService userDetailsService;
+    private final XssFilter xssFilter;
 
     @Autowired
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
                          CustomAuthenticationSuccessHandler authenticationSuccessHandler,
-                         @Lazy CustomUserDetailsService userDetailsService) {
+                         @Lazy CustomUserDetailsService userDetailsService,
+                         XssFilter xssFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.authenticationSuccessHandler = authenticationSuccessHandler;
         this.userDetailsService = userDetailsService;
+        this.xssFilter = xssFilter;
     }
 
     @Bean
@@ -68,13 +74,46 @@ public class SecurityConfig {
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             )
-            .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/h2-console/**", "/api/**")
-                .csrfTokenRepository(new org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository())
-            )
+            .csrf(csrf -> {
+                // Configuration CSRF améliorée avec CookieCsrfTokenRepository
+                CookieCsrfTokenRepository tokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+                tokenRepository.setCookiePath("/");
+                tokenRepository.setCookieName("XSRF-TOKEN");
+                tokenRepository.setHeaderName("X-XSRF-TOKEN");
+                
+                // Handler pour supporter les requêtes asynchrones
+                CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+                requestHandler.setCsrfRequestAttributeName("_csrf");
+                
+                csrf.csrfTokenRepository(tokenRepository)
+                     .csrfTokenRequestHandler(requestHandler)
+                     .ignoringRequestMatchers("/h2-console/**", "/api/auth/**");
+            })
             .headers(headers -> headers
-                .frameOptions().sameOrigin()
+                // Protection contre le clickjacking
+                .frameOptions(frameOptions -> frameOptions.deny())
+                // Content Security Policy pour prévenir XSS
+                .contentSecurityPolicy(csp -> csp
+                    .policyDirectives("default-src 'self'; " +
+                        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " +
+                        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " +
+                        "img-src 'self' data: https:; " +
+                        "font-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " +
+                        "connect-src 'self'; " +
+                        "frame-ancestors 'none';")
+                )
+                // X-Content-Type-Options pour empêcher le MIME sniffing
+                .contentTypeOptions(contentTypeOptions -> {})
+                // HTTP Strict Transport Security (HSTS)
+                .httpStrictTransportSecurity(hsts -> hsts
+                    .maxAgeInSeconds(31536000)
+                )
+                // Referrer Policy
+                .addHeaderWriter((request, response) -> {
+                    response.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+                })
             )
+            .addFilterBefore(xssFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

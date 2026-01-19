@@ -13,6 +13,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+import com.iit.projetjee.util.XssSanitizer;
 
 import java.io.UnsupportedEncodingException;
 import java.util.List;
@@ -131,8 +132,9 @@ public class EmailService implements IInscriptionEmailService, INotificationEmai
 
             // Préparer le contexte Thymeleaf
             Context context = new Context();
-            context.setVariable("recipientName", recipientName);
-            context.setVariable("message", message);
+            context.setVariable("recipientName", XssSanitizer.sanitize(recipientName));
+            // Nettoyer le message mais préserver le HTML valide pour les emails
+            context.setVariable("message", XssSanitizer.sanitizeHtml(message));
 
             // Générer le contenu HTML depuis le template
             String htmlContent = templateEngine.process("emails/admin-email", context);
@@ -182,11 +184,12 @@ public class EmailService implements IInscriptionEmailService, INotificationEmai
 
             // Préparer le contexte Thymeleaf
             Context context = new Context();
-            context.setVariable("recipientName", recipientName);
-            context.setVariable("message", message);
-            context.setVariable("formateurName", formateurName);
-            context.setVariable("formateurEmail", formateurEmail);
-            context.setVariable("formateurSpecialite", formateurSpecialite);
+            context.setVariable("recipientName", XssSanitizer.sanitize(recipientName));
+            // Nettoyer le message mais préserver le HTML valide pour les emails
+            context.setVariable("message", XssSanitizer.sanitizeHtml(message));
+            context.setVariable("formateurName", XssSanitizer.sanitize(formateurName));
+            context.setVariable("formateurEmail", XssSanitizer.sanitize(formateurEmail));
+            context.setVariable("formateurSpecialite", XssSanitizer.sanitize(formateurSpecialite));
 
             // Générer le contenu HTML depuis le template
             String htmlContent = templateEngine.process("emails/formateur-email", context);
