@@ -1,7 +1,7 @@
 package com.iit.projetjee.controller.api;
 
 import com.iit.projetjee.entity.Etudiant;
-import com.iit.projetjee.service.EtudiantService;
+import com.iit.projetjee.service.IEtudiantService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,10 +15,10 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class EtudiantRestController {
 
-    private final EtudiantService etudiantService;
+    private final IEtudiantService etudiantService;
 
     @Autowired
-    public EtudiantRestController(EtudiantService etudiantService) {
+    public EtudiantRestController(IEtudiantService etudiantService) {
         this.etudiantService = etudiantService;
     }
 

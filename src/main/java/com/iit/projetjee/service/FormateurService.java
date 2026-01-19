@@ -12,7 +12,7 @@ import java.util.List;
 
 @Service
 @Transactional
-public class FormateurService {
+public class FormateurService implements IFormateurService {
 
     private final FormateurRepository formateurRepository;
     private final PasswordEncoder passwordEncoder;

@@ -1,7 +1,7 @@
 package com.iit.projetjee.controller.api;
 
 import com.iit.projetjee.entity.Inscription;
-import com.iit.projetjee.service.InscriptionService;
+import com.iit.projetjee.service.IInscriptionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,10 +16,10 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class InscriptionRestController {
 
-    private final InscriptionService inscriptionService;
+    private final IInscriptionService inscriptionService;
 
     @Autowired
-    public InscriptionRestController(InscriptionService inscriptionService) {
+    public InscriptionRestController(IInscriptionService inscriptionService) {
         this.inscriptionService = inscriptionService;
     }
 

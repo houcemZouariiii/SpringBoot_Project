@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class CoursService {
+public class CoursService implements ICoursService {
 
     private final CoursRepository coursRepository;
     private final FormateurRepository formateurRepository;

@@ -3,12 +3,12 @@
 -- Utilisez-le si vous voulez créer la base manuellement via phpMyAdmin
 
 -- Créer la base de données
-CREATE DATABASE IF NOT EXISTS projetjee 
+CREATE DATABASE IF NOT EXISTS springiit 
     CHARACTER SET utf8mb4 
     COLLATE utf8mb4_unicode_ci;
 
 -- Utiliser la base de données
-USE projetjee;
+USE springiit;
 
 -- Note: Les tables seront créées automatiquement par Hibernate/JPA
 -- lors du premier démarrage de l'application grâce à:

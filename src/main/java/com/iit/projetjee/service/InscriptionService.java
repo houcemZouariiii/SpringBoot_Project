@@ -7,59 +7,51 @@ import com.iit.projetjee.exception.ResourceNotFoundException;
 import com.iit.projetjee.repository.CoursRepository;
 import com.iit.projetjee.repository.EtudiantRepository;
 import com.iit.projetjee.repository.InscriptionRepository;
+import com.iit.projetjee.validator.InscriptionValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.ArrayList;
 
 @Service
 @Transactional
-public class InscriptionService {
+public class InscriptionService implements IInscriptionService {
 
     private final InscriptionRepository inscriptionRepository;
     private final EtudiantRepository etudiantRepository;
     private final CoursRepository coursRepository;
-    private final CoursService coursService;
-    private final EmailService emailService;
+    private final ICoursService coursService;
+    private final IInscriptionEmailService emailService;
+    private final InscriptionValidator validator;
 
     @Autowired
     public InscriptionService(InscriptionRepository inscriptionRepository,
                              EtudiantRepository etudiantRepository,
                              CoursRepository coursRepository,
-                             CoursService coursService,
-                             EmailService emailService) {
+                             ICoursService coursService,
+                             IInscriptionEmailService emailService,
+                             InscriptionValidator validator) {
         this.inscriptionRepository = inscriptionRepository;
         this.etudiantRepository = etudiantRepository;
         this.coursRepository = coursRepository;
         this.coursService = coursService;
         this.emailService = emailService;
+        this.validator = validator;
     }
 
     // Créer une inscription
     public Inscription createInscription(Inscription inscription) {
-        // Vérifier que l'étudiant existe
-        if (inscription.getEtudiant() != null && inscription.getEtudiant().getId() != null) {
-            Etudiant etudiant = etudiantRepository.findById(inscription.getEtudiant().getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Étudiant non trouvé"));
-            inscription.setEtudiant(etudiant);
-        }
-        
-        // Vérifier que le cours existe
-        if (inscription.getCours() != null && inscription.getCours().getId() != null) {
-            Cours cours = coursRepository.findById(inscription.getCours().getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Cours non trouvé"));
-            inscription.setCours(cours);
-        }
-        
-        // Vérifier si l'étudiant n'est pas déjà inscrit
-        if (inscriptionRepository.existsByEtudiantAndCours(inscription.getEtudiant(), inscription.getCours())) {
-            throw new IllegalArgumentException("L'étudiant est déjà inscrit à ce cours");
+        // Valider l'inscription
+        List<String> validationErrors = validator.validateInscription(inscription);
+        if (!validationErrors.isEmpty()) {
+            throw new IllegalArgumentException(String.join(", ", validationErrors));
         }
         
         // Vérifier les conflits d'horaires
-        if (hasConflitHoraires(inscription.getEtudiant().getId(), inscription.getCours().getId())) {
+        if (validator.hasConflitHoraires(inscription.getEtudiant().getId(), inscription.getCours().getId())) {
             throw new IllegalStateException("Conflit d'horaires : l'étudiant a déjà un cours à cette période");
         }
         
@@ -104,7 +96,7 @@ public class InscriptionService {
         }
         
         // Vérifier les conflits d'horaires
-        if (hasConflitHoraires(etudiantId, coursId)) {
+        if (validator.hasConflitHoraires(etudiantId, coursId)) {
             throw new IllegalStateException("Conflit d'horaires : l'étudiant a déjà un cours à cette période");
         }
         
@@ -218,35 +210,5 @@ public class InscriptionService {
         return inscriptionRepository.save(inscription);
     }
 
-    // Vérifier les conflits d'horaires pour un étudiant
-    private boolean hasConflitHoraires(Long etudiantId, Long coursId) {
-        Cours nouveauCours = coursRepository.findById(coursId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cours non trouvé"));
-        
-        if (nouveauCours.getDateDebut() == null || nouveauCours.getDateFin() == null) {
-            return false; // Pas de dates, pas de conflit possible
-        }
-        
-        List<Inscription> inscriptions = inscriptionRepository.findByEtudiantId(etudiantId);
-        
-        for (Inscription inscription : inscriptions) {
-            if (inscription.getStatut() != Inscription.StatutInscription.VALIDEE) {
-                continue; // Ne considérer que les inscriptions validées
-            }
-            
-            Cours coursExistant = inscription.getCours();
-            if (coursExistant.getDateDebut() != null && coursExistant.getDateFin() != null) {
-                // Vérifier si les périodes se chevauchent
-                boolean chevauchement = !(nouveauCours.getDateFin().isBefore(coursExistant.getDateDebut()) || 
-                                        nouveauCours.getDateDebut().isAfter(coursExistant.getDateFin()));
-                
-                if (chevauchement) {
-                    return true; // Conflit détecté
-                }
-            }
-        }
-        
-        return false; // Pas de conflit
-    }
 }
 

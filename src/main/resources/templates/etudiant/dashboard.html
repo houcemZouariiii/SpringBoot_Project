@@ -12,7 +12,7 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/etudiant/dashboard">
+            <a class="navbar-brand" href="/etudiants/dashboard">
                 <i class="bi bi-mortarboard-fill"></i> <span class="brand-name">N&H Institut of Technology</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -21,8 +21,13 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/etudiant/dashboard">
+                        <a class="nav-link" href="/etudiants/dashboard">
                             <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/etudiants/cours">
+                            <i class="bi bi-book"></i> Cours disponibles
                         </a>
                     </li>
                     <li class="nav-item">
@@ -134,9 +139,14 @@
                     </div>
                     <div class="card-body">
                         <p class="text-muted">Consultez vos cours, notes et inscriptions depuis votre tableau de bord.</p>
-                        <a href="/" class="btn btn-primary btn-sm">
-                            <i class="bi bi-arrow-left"></i> Retour à l'accueil
-                        </a>
+                        <div class="d-flex gap-2">
+                            <a href="/etudiants/cours" class="btn btn-primary btn-sm">
+                                <i class="bi bi-book"></i> Voir les cours disponibles
+                            </a>
+                            <a href="/" class="btn btn-secondary btn-sm">
+                                <i class="bi bi-arrow-left"></i> Accueil
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -9,7 +9,7 @@
 
         <div class="card">
             <div class="card-body">
-                <form th:action="/admin/inscriptions" th:object="${inscription}" method="post" class="row g-3" id="inscriptionForm">
+                <form th:action="/inscriptions" th:object="${inscription}" method="post" class="row g-3" id="inscriptionForm">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                     
                     <div class="col-md-6">
@@ -51,7 +51,7 @@
                             <button type="submit" class="btn btn-warning" id="submitBtn">
                                 <i class="bi bi-check-circle"></i> Enregistrer l'inscription
                             </button>
-                            <a href="/admin/inscriptions" class="btn btn-secondary">
+                            <a href="/inscriptions" class="btn btn-secondary">
                                 <i class="bi bi-x-circle"></i> Annuler
                             </a>
                         </div>

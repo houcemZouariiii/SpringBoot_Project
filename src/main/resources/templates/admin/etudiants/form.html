@@ -10,7 +10,7 @@
 
         <div class="card">
             <div class="card-body">
-                <form th:action="${etudiant.id != null ? '/admin/etudiants/' + etudiant.id : '/admin/etudiants'}" 
+                <form th:action="${etudiant.id != null ? '/etudiants/' + etudiant.id : '/etudiants'}" 
                       th:object="${etudiant}" method="post" class="row g-3">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                     <div class="col-md-6">
@@ -64,7 +64,7 @@
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-save"></i> Enregistrer
                         </button>
-                        <a href="/admin/etudiants" class="btn btn-secondary">
+                        <a href="/etudiants" class="btn btn-secondary">
                             <i class="bi bi-x-circle"></i> Annuler
                         </a>
                     </div>

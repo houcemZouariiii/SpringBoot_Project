@@ -7,7 +7,7 @@
             <span th:text="${note.id != null ? 'Modifier la note' : 'Ajouter une note'}"></span>
         </h1>
 
-        <form th:action="${note.id != null ? '/admin/notes/' + note.id : '/admin/notes'}" 
+        <form th:action="${note.id != null ? '/notes/' + note.id : '/notes'}" 
               th:object="${note}" method="post" class="row g-3">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <div class="col-md-6">
@@ -46,7 +46,7 @@
             </div>
             <div class="col-12">
                 <button type="submit" class="btn btn-primary">Enregistrer</button>
-                <a href="/admin/notes" class="btn btn-secondary">Annuler</a>
+                <a href="/notes" class="btn btn-secondary">Annuler</a>
             </div>
         </form>
     </div>

@@ -1,7 +1,7 @@
 package com.iit.projetjee.controller.api;
 
 import com.iit.projetjee.entity.Cours;
-import com.iit.projetjee.service.CoursService;
+import com.iit.projetjee.service.ICoursService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,10 +16,10 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class CoursRestController {
 
-    private final CoursService coursService;
+    private final ICoursService coursService;
 
     @Autowired
-    public CoursRestController(CoursService coursService) {
+    public CoursRestController(ICoursService coursService) {
         this.coursService = coursService;
     }
 

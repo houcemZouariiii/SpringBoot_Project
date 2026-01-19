@@ -30,10 +30,10 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                 redirectUrl = "/admin/dashboard";
                 break;
             } else if (role.equals("ROLE_FORMATEUR")) {
-                redirectUrl = "/formateur/dashboard";
+                redirectUrl = "/formateurs/dashboard";
                 break;
             } else if (role.equals("ROLE_ETUDIANT")) {
-                redirectUrl = "/etudiant/dashboard";
+                redirectUrl = "/etudiants/dashboard";
                 break;
             }
         }

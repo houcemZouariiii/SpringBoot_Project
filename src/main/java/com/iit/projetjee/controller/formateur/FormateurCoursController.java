@@ -2,10 +2,11 @@ package com.iit.projetjee.controller.formateur;
 
 import com.iit.projetjee.entity.Cours;
 import com.iit.projetjee.entity.Formateur;
-import com.iit.projetjee.service.CoursService;
-import com.iit.projetjee.service.FormateurService;
+import com.iit.projetjee.service.ICoursService;
+import com.iit.projetjee.service.IFormateurService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,16 +18,17 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/formateur/cours")
 public class FormateurCoursController {
 
-    private final CoursService coursService;
-    private final FormateurService formateurService;
+    private final ICoursService coursService;
+    private final IFormateurService formateurService;
 
     @Autowired
-    public FormateurCoursController(CoursService coursService, FormateurService formateurService) {
+    public FormateurCoursController(ICoursService coursService, IFormateurService formateurService) {
         this.coursService = coursService;
         this.formateurService = formateurService;
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('FORMATEUR', 'ADMIN')")
     public String listCours(Model model, Authentication authentication) {
         String username = authentication.getName();
         Formateur formateur = formateurService.getFormateurByUsername(username);
@@ -35,6 +37,7 @@ public class FormateurCoursController {
     }
 
     @GetMapping("/new")
+    @PreAuthorize("hasAnyRole('FORMATEUR', 'ADMIN')")
     public String showCreateForm(Model model, Authentication authentication) {
         String username = authentication.getName();
         Formateur formateur = formateurService.getFormateurByUsername(username);
@@ -48,6 +51,7 @@ public class FormateurCoursController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('FORMATEUR', 'ADMIN')")
     public String createCours(@Valid @ModelAttribute Cours cours, 
                              BindingResult result,
                              Model model,
@@ -75,6 +79,7 @@ public class FormateurCoursController {
     }
 
     @GetMapping("/{id}/edit")
+    @PreAuthorize("hasAnyRole('FORMATEUR', 'ADMIN')")
     public String showEditForm(@PathVariable Long id, Model model, Authentication authentication) {
         String username = authentication.getName();
         Formateur formateur = formateurService.getFormateurByUsername(username);
@@ -92,6 +97,7 @@ public class FormateurCoursController {
     }
 
     @PostMapping("/{id}")
+    @PreAuthorize("hasAnyRole('FORMATEUR', 'ADMIN')")
     public String updateCours(@PathVariable Long id, 
                              @Valid @ModelAttribute Cours coursDetails,
                              BindingResult result,
@@ -128,6 +134,7 @@ public class FormateurCoursController {
     }
 
     @PostMapping("/{id}/delete")
+    @PreAuthorize("hasAnyRole('FORMATEUR', 'ADMIN')")
     public String deleteCours(@PathVariable Long id, 
                              Authentication authentication,
                              RedirectAttributes redirectAttributes) {

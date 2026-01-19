@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout :: layout(~{::content}, 'Gestion des Étudiants - ' + ${groupe.code})}">
+<body>
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="bi bi-people"></i> Gestion des Étudiants</h1>
+            <p class="text-muted mb-0">Groupe: <strong th:text="${groupe.code}"></strong> 
+                <span th:if="${groupe.nom != null && !groupe.nom.isEmpty()}" th:text="'(' + ${groupe.nom} + ')'"></span>
+            </p>
+        </div>
+        <a href="/groupes" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Retour aux groupes
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-person-plus"></i> Étudiants disponibles</h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/groupes/{id}/etudiants(id=${groupe.id})}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <div class="mb-3">
+                            <label class="form-label">Sélectionner les étudiants à affecter au groupe</label>
+                            <select class="form-select" name="etudiantIds" multiple size="10" style="height: 400px;">
+                                <option th:each="etudiant : ${etudiants}" 
+                                        th:value="${etudiant.id}" 
+                                        th:text="${etudiant.prenom + ' ' + etudiant.nom + ' (' + etudiant.email + ')'}"
+                                        th:selected="${etudiantIds != null && etudiantIds.contains(etudiant.id)}">
+                                </option>
+                            </select>
+                            <small class="text-muted">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs étudiants</small>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="/groupes" class="btn btn-secondary">Annuler</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Enregistrer les affectations
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-check-circle"></i> Étudiants du groupe 
+                        <span class="badge bg-light text-dark" th:text="${groupe.etudiants != null ? groupe.etudiants.size() : 0}"></span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div th:if="${groupe.etudiants != null && !groupe.etudiants.isEmpty()}">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Prénom</th>
+                                        <th>Email</th>
+                                        <th>Section</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="etudiant : ${groupe.etudiants}">
+                                        <td th:text="${etudiant.nom}"></td>
+                                        <td th:text="${etudiant.prenom}"></td>
+                                        <td th:text="${etudiant.email}"></td>
+                                        <td>
+                                            <span th:if="${etudiant.section != null}" 
+                                                  class="badge bg-info" 
+                                                  th:text="${etudiant.section.libelle}"></span>
+                                            <span th:if="${etudiant.section == null}" class="text-muted">-</span>
+                                        </td>
+                                        <td>
+                                            <form th:action="@{/groupes/{id}/etudiants/retirer(id=${groupe.id})}" method="post" class="d-inline">
+                                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                                <input type="hidden" name="etudiantId" th:value="${etudiant.id}"/>
+                                                <button type="submit" class="btn btn-sm btn-danger" 
+                                                        onclick="return confirm('Retirer cet étudiant du groupe ?')" 
+                                                        title="Retirer du groupe">
+                                                    <i class="bi bi-x-circle"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div th:if="${groupe.etudiants == null || groupe.etudiants.isEmpty()}" class="text-center text-muted py-4">
+                        <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                        <p class="mt-2">Aucun étudiant n'est affecté à ce groupe</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

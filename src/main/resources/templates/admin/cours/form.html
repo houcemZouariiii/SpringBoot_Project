@@ -7,7 +7,7 @@
             <span th:text="${cours.id != null ? 'Modifier le cours' : 'Nouveau cours'}"></span>
         </h1>
 
-        <form th:action="${cours.id != null ? '/admin/cours/' + cours.id : '/admin/cours'}" 
+        <form th:action="${cours.id != null ? '/cours/' + cours.id : '/cours'}" 
               th:object="${cours}" method="post" class="row g-3">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <div class="col-12">
@@ -90,7 +90,7 @@
             </div>
             <div class="col-12">
                 <button type="submit" class="btn btn-info">Enregistrer</button>
-                <a href="/admin/cours" class="btn btn-secondary">Annuler</a>
+                <a href="/cours" class="btn btn-secondary">Annuler</a>
             </div>
         </form>
     </div>

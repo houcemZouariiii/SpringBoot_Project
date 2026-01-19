@@ -114,8 +114,9 @@ public class SeanceService {
         if (seance.getDateDebut() == null || seance.getDateFin() == null) {
             throw new IllegalArgumentException("Les dates de début et de fin sont obligatoires");
         }
-        if (!seance.getDateFin().isAfter(seance.getDateDebut())) {
-            throw new IllegalArgumentException("La date de fin doit être après la date de début");
+        // La date de fin doit être après ou égale à la date de début
+        if (seance.getDateFin().isBefore(seance.getDateDebut())) {
+            throw new IllegalArgumentException("La date de fin doit être après ou égale à la date de début");
         }
 
         if (seance.getGroupes() != null && !seance.getGroupes().isEmpty()) {

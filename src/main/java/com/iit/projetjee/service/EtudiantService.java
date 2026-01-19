@@ -12,7 +12,7 @@ import java.util.List;
 
 @Service
 @Transactional
-public class EtudiantService {
+public class EtudiantService implements IEtudiantService {
 
     private final EtudiantRepository etudiantRepository;
     private final PasswordEncoder passwordEncoder;

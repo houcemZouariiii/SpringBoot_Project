@@ -3,11 +3,12 @@ package com.iit.projetjee.controller.formateur;
 import com.iit.projetjee.entity.Etudiant;
 import com.iit.projetjee.entity.Formateur;
 import com.iit.projetjee.entity.Inscription;
-import com.iit.projetjee.service.EmailService;
-import com.iit.projetjee.service.EtudiantService;
-import com.iit.projetjee.service.FormateurService;
-import com.iit.projetjee.service.InscriptionService;
+import com.iit.projetjee.service.IFormateurEmailService;
+import com.iit.projetjee.service.IEtudiantService;
+import com.iit.projetjee.service.IFormateurService;
+import com.iit.projetjee.service.IInscriptionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,16 +24,16 @@ import java.util.stream.Collectors;
 @RequestMapping("/formateur/emails")
 public class FormateurEmailController {
 
-    private final EmailService emailService;
-    private final EtudiantService etudiantService;
-    private final FormateurService formateurService;
-    private final InscriptionService inscriptionService;
+    private final IFormateurEmailService emailService;
+    private final IEtudiantService etudiantService;
+    private final IFormateurService formateurService;
+    private final IInscriptionService inscriptionService;
 
     @Autowired
-    public FormateurEmailController(EmailService emailService, 
-                                   EtudiantService etudiantService,
-                                   FormateurService formateurService,
-                                   InscriptionService inscriptionService) {
+    public FormateurEmailController(IFormateurEmailService emailService, 
+                                   IEtudiantService etudiantService,
+                                   IFormateurService formateurService,
+                                   IInscriptionService inscriptionService) {
         this.emailService = emailService;
         this.etudiantService = etudiantService;
         this.formateurService = formateurService;
@@ -40,6 +41,7 @@ public class FormateurEmailController {
     }
 
     @GetMapping("/send")
+    @PreAuthorize("hasAnyRole('FORMATEUR', 'ADMIN')")
     public String showEmailForm(Model model, Authentication authentication) {
         String username = authentication.getName();
         
@@ -68,6 +70,7 @@ public class FormateurEmailController {
     }
 
     @PostMapping("/send")
+    @PreAuthorize("hasAnyRole('FORMATEUR', 'ADMIN')")
     public String sendEmail(@RequestParam(required = false) List<Long> etudiantIds,
                            @RequestParam(required = false) String emailTo,
                            @RequestParam String subject,

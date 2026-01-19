@@ -1,7 +1,7 @@
 package com.iit.projetjee.controller.api;
 
 import com.iit.projetjee.entity.Note;
-import com.iit.projetjee.service.NoteService;
+import com.iit.projetjee.service.INoteService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,10 +16,10 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class NoteRestController {
 
-    private final NoteService noteService;
+    private final INoteService noteService;
 
     @Autowired
-    public NoteRestController(NoteService noteService) {
+    public NoteRestController(INoteService noteService) {
         this.noteService = noteService;
     }
 

@@ -1,7 +1,7 @@
 package com.iit.projetjee.controller.api;
 
 import com.iit.projetjee.entity.Formateur;
-import com.iit.projetjee.service.FormateurService;
+import com.iit.projetjee.service.IFormateurService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,10 +15,10 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class FormateurRestController {
 
-    private final FormateurService formateurService;
+    private final IFormateurService formateurService;
 
     @Autowired
-    public FormateurRestController(FormateurService formateurService) {
+    public FormateurRestController(IFormateurService formateurService) {
         this.formateurService = formateurService;
     }
 

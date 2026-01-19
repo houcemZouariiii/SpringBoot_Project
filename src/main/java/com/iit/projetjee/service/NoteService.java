@@ -2,7 +2,6 @@ package com.iit.projetjee.service;
 
 import com.iit.projetjee.entity.Cours;
 import com.iit.projetjee.entity.Etudiant;
-import com.iit.projetjee.entity.Inscription;
 import com.iit.projetjee.entity.Note;
 import com.iit.projetjee.exception.ResourceNotFoundException;
 import com.iit.projetjee.repository.CoursRepository;
@@ -18,20 +17,20 @@ import java.util.List;
 
 @Service
 @Transactional
-public class NoteService {
+public class NoteService implements INoteService {
 
     private final NoteRepository noteRepository;
     private final EtudiantRepository etudiantRepository;
     private final CoursRepository coursRepository;
     private final InscriptionRepository inscriptionRepository;
-    private final EmailService emailService;
+    private final INotificationEmailService emailService;
 
     @Autowired
     public NoteService(NoteRepository noteRepository,
                       EtudiantRepository etudiantRepository,
                       CoursRepository coursRepository,
                       InscriptionRepository inscriptionRepository,
-                      EmailService emailService) {
+                      INotificationEmailService emailService) {
         this.noteRepository = noteRepository;
         this.etudiantRepository = etudiantRepository;
         this.coursRepository = coursRepository;
@@ -42,15 +41,17 @@ public class NoteService {
     // Créer une note
     public Note createNote(Note note) {
         // Vérifier que l'étudiant existe
+        Etudiant etudiant = null;
         if (note.getEtudiant() != null && note.getEtudiant().getId() != null) {
-            Etudiant etudiant = etudiantRepository.findById(note.getEtudiant().getId())
+            etudiant = etudiantRepository.findById(note.getEtudiant().getId())
                     .orElseThrow(() -> new ResourceNotFoundException("Étudiant non trouvé"));
             note.setEtudiant(etudiant);
         }
         
         // Vérifier que le cours existe
+        Cours cours = null;
         if (note.getCours() != null && note.getCours().getId() != null) {
-            Cours cours = coursRepository.findById(note.getCours().getId())
+            cours = coursRepository.findById(note.getCours().getId())
                     .orElseThrow(() -> new ResourceNotFoundException("Cours non trouvé"));
             note.setCours(cours);
         }
@@ -64,7 +65,26 @@ public class NoteService {
             note.setDateEvaluation(LocalDate.now());
         }
         
-        return noteRepository.save(note);
+        Note savedNote = noteRepository.save(note);
+        
+        // Envoyer un email de notification à l'étudiant
+        if (etudiant != null && cours != null && savedNote.getValeur() != null) {
+            try {
+                emailService.sendNoteNotification(
+                    etudiant.getEmail(),
+                    etudiant.getNomComplet(),
+                    cours.getTitre(),
+                    savedNote.getValeur(),
+                    savedNote.getTypeEvaluation(),
+                    savedNote.getCommentaire(),
+                    false // Nouvelle note
+                );
+            } catch (Exception e) {
+                System.err.println("Erreur lors de l'envoi de l'email de notification de note : " + e.getMessage());
+            }
+        }
+        
+        return savedNote;
     }
 
     // Ajouter une note
@@ -91,7 +111,10 @@ public class NoteService {
                 etudiant.getEmail(),
                 etudiant.getNomComplet(),
                 cours.getTitre(),
-                valeur
+                valeur,
+                savedNote.getTypeEvaluation(),
+                savedNote.getCommentaire(),
+                false // Nouvelle note
             );
         } catch (Exception e) {
             System.err.println("Erreur lors de l'envoi de l'email : " + e.getMessage());
@@ -115,12 +138,36 @@ public class NoteService {
     public Note updateNote(Long id, Note noteDetails) {
         Note note = getNoteById(id);
         
+        // Sauvegarder les anciennes valeurs pour comparer
+        Double ancienneValeur = note.getValeur();
+        
         note.setValeur(noteDetails.getValeur());
         note.setTypeEvaluation(noteDetails.getTypeEvaluation());
         note.setCommentaire(noteDetails.getCommentaire());
         note.setDateEvaluation(noteDetails.getDateEvaluation());
         
-        return noteRepository.save(note);
+        Note savedNote = noteRepository.save(note);
+        
+        // Envoyer un email de notification si la note a changé
+        if (savedNote.getEtudiant() != null && savedNote.getCours() != null && 
+            savedNote.getValeur() != null && 
+            (ancienneValeur == null || !ancienneValeur.equals(savedNote.getValeur()))) {
+            try {
+                emailService.sendNoteNotification(
+                    savedNote.getEtudiant().getEmail(),
+                    savedNote.getEtudiant().getNomComplet(),
+                    savedNote.getCours().getTitre(),
+                    savedNote.getValeur(),
+                    savedNote.getTypeEvaluation(),
+                    savedNote.getCommentaire(),
+                    true // Mise à jour
+                );
+            } catch (Exception e) {
+                System.err.println("Erreur lors de l'envoi de l'email de notification de note : " + e.getMessage());
+            }
+        }
+        
+        return savedNote;
     }
 
     // Supprimer une note

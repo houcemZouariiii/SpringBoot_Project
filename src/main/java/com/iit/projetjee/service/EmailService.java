@@ -19,7 +19,8 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class EmailService {
+public class EmailService implements IInscriptionEmailService, INotificationEmailService, 
+                                     IAdminEmailService, IFormateurEmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
@@ -69,13 +70,41 @@ public class EmailService {
     }
 
     public void sendNoteNotification(String to, String etudiantNom, String coursTitre, Double note) {
+        sendNoteNotification(to, etudiantNom, coursTitre, note, null, null, false);
+    }
+
+    public void sendNoteNotification(String to, String etudiantNom, String coursTitre, Double note, 
+                                     String typeEvaluation, String commentaire, boolean isUpdate) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
-        message.setSubject("Nouvelle note pour le cours : " + coursTitre);
-        message.setText("Bonjour " + etudiantNom + ",\n\n" +
-                "Une nouvelle note a été ajoutée pour le cours \"" + coursTitre + "\".\n\n" +
-                "Note : " + note + "/20\n\n" +
-                "Cordialement,\nL'équipe pédagogique");
+        message.setSubject((isUpdate ? "Mise à jour de note" : "Nouvelle note") + " pour le cours : " + coursTitre);
+        
+        StringBuilder text = new StringBuilder();
+        text.append("Bonjour ").append(etudiantNom).append(",\n\n");
+        text.append(isUpdate ? "Votre note a été mise à jour" : "Une nouvelle note a été ajoutée");
+        text.append(" pour le cours \"").append(coursTitre).append("\".\n\n");
+        text.append("Note : ").append(note).append("/20\n");
+        
+        if (typeEvaluation != null && !typeEvaluation.isEmpty()) {
+            text.append("Type d'évaluation : ").append(typeEvaluation).append("\n");
+        }
+        
+        if (commentaire != null && !commentaire.isEmpty()) {
+            text.append("Commentaire : ").append(commentaire).append("\n");
+        }
+        
+        // Ajouter une appréciation basée sur la note
+        String appreciation = "";
+        if (note >= 16) appreciation = "Très bien";
+        else if (note >= 14) appreciation = "Bien";
+        else if (note >= 12) appreciation = "Assez bien";
+        else if (note >= 10) appreciation = "Passable";
+        else appreciation = "Insuffisant";
+        
+        text.append("Appréciation : ").append(appreciation).append("\n\n");
+        text.append("Cordialement,\nL'équipe pédagogique");
+        
+        message.setText(text.toString());
         mailSender.send(message);
     }
 

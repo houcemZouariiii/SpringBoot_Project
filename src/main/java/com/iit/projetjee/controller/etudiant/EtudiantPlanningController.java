@@ -3,7 +3,7 @@ package com.iit.projetjee.controller.etudiant;
 import com.iit.projetjee.entity.Etudiant;
 import com.iit.projetjee.entity.Groupe;
 import com.iit.projetjee.entity.Seance;
-import com.iit.projetjee.service.EtudiantService;
+import com.iit.projetjee.service.IEtudiantService;
 import com.iit.projetjee.service.SeanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -19,11 +19,11 @@ import java.util.stream.Collectors;
 @RequestMapping("/etudiant/planning")
 public class EtudiantPlanningController {
 
-    private final EtudiantService etudiantService;
+    private final IEtudiantService etudiantService;
     private final SeanceService seanceService;
 
     @Autowired
-    public EtudiantPlanningController(EtudiantService etudiantService, SeanceService seanceService) {
+    public EtudiantPlanningController(IEtudiantService etudiantService, SeanceService seanceService) {
         this.etudiantService = etudiantService;
         this.seanceService = seanceService;
     }

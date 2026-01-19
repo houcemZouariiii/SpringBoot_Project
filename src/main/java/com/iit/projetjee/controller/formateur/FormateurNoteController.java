@@ -6,12 +6,13 @@ import com.iit.projetjee.entity.Etudiant;
 import com.iit.projetjee.entity.Formateur;
 import com.iit.projetjee.entity.Inscription;
 import com.iit.projetjee.entity.Note;
-import com.iit.projetjee.service.CoursService;
-import com.iit.projetjee.service.EtudiantService;
-import com.iit.projetjee.service.FormateurService;
-import com.iit.projetjee.service.InscriptionService;
-import com.iit.projetjee.service.NoteService;
+import com.iit.projetjee.service.ICoursService;
+import com.iit.projetjee.service.IEtudiantService;
+import com.iit.projetjee.service.IFormateurService;
+import com.iit.projetjee.service.IInscriptionService;
+import com.iit.projetjee.service.INoteService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,16 +26,16 @@ import java.util.stream.Collectors;
 @RequestMapping("/formateur/notes")
 public class FormateurNoteController {
 
-    private final NoteService noteService;
-    private final CoursService coursService;
-    private final FormateurService formateurService;
-    private final InscriptionService inscriptionService;
+    private final INoteService noteService;
+    private final ICoursService coursService;
+    private final IFormateurService formateurService;
+    private final IInscriptionService inscriptionService;
 
     @Autowired
-    public FormateurNoteController(NoteService noteService,
-                                   CoursService coursService,
-                                   FormateurService formateurService,
-                                   InscriptionService inscriptionService) {
+    public FormateurNoteController(INoteService noteService,
+                                   ICoursService coursService,
+                                   IFormateurService formateurService,
+                                   IInscriptionService inscriptionService) {
         this.noteService = noteService;
         this.coursService = coursService;
         this.formateurService = formateurService;
@@ -42,6 +43,7 @@ public class FormateurNoteController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('FORMATEUR', 'ADMIN')")
     public String listNotes(Model model, Authentication authentication) {
         String username = authentication.getName();
         Formateur formateur = formateurService.getFormateurByUsername(username);
@@ -59,6 +61,7 @@ public class FormateurNoteController {
     }
 
     @GetMapping("/new")
+    @PreAuthorize("hasAnyRole('FORMATEUR', 'ADMIN')")
     public String showCreateForm(Model model, Authentication authentication,
                                 @RequestParam(required = false) Long coursId) {
         String username = authentication.getName();
@@ -79,6 +82,7 @@ public class FormateurNoteController {
     }
 
     @GetMapping("/cours/{coursId}/etudiants")
+    @PreAuthorize("hasAnyRole('FORMATEUR', 'ADMIN')")
     @ResponseBody
     public List<EtudiantDTO> getEtudiantsByCours(@PathVariable Long coursId, Authentication authentication) {
         try {
@@ -118,6 +122,7 @@ public class FormateurNoteController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('FORMATEUR', 'ADMIN')")
     public String createNote(@ModelAttribute Note note,
                             @RequestParam Long coursId,
                             @RequestParam Long etudiantId,
@@ -156,6 +161,7 @@ public class FormateurNoteController {
     }
 
     @GetMapping("/{id}/edit")
+    @PreAuthorize("hasAnyRole('FORMATEUR', 'ADMIN')")
     public String showEditForm(@PathVariable Long id, Model model, Authentication authentication) {
         String username = authentication.getName();
         Formateur formateur = formateurService.getFormateurByUsername(username);
@@ -176,6 +182,7 @@ public class FormateurNoteController {
     }
 
     @PostMapping("/{id}")
+    @PreAuthorize("hasAnyRole('FORMATEUR', 'ADMIN')")
     public String updateNote(@PathVariable Long id,
                             @ModelAttribute Note noteDetails,
                             Authentication authentication,
@@ -202,6 +209,7 @@ public class FormateurNoteController {
     }
 
     @PostMapping("/{id}/delete")
+    @PreAuthorize("hasAnyRole('FORMATEUR', 'ADMIN')")
     public String deleteNote(@PathVariable Long id, 
                             Authentication authentication,
                             RedirectAttributes redirectAttributes) {

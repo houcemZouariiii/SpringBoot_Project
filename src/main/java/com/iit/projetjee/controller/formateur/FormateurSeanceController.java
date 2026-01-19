@@ -2,9 +2,10 @@ package com.iit.projetjee.controller.formateur;
 
 import com.iit.projetjee.entity.Seance;
 import com.iit.projetjee.entity.Formateur;
-import com.iit.projetjee.service.FormateurService;
+import com.iit.projetjee.service.IFormateurService;
 import com.iit.projetjee.service.SeanceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,15 +19,16 @@ import java.util.List;
 public class FormateurSeanceController {
 
     private final SeanceService seanceService;
-    private final FormateurService formateurService;
+    private final IFormateurService formateurService;
 
     @Autowired
-    public FormateurSeanceController(SeanceService seanceService, FormateurService formateurService) {
+    public FormateurSeanceController(SeanceService seanceService, IFormateurService formateurService) {
         this.seanceService = seanceService;
         this.formateurService = formateurService;
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('FORMATEUR', 'ADMIN')")
     public String list(Model model, Authentication authentication) {
         String username = authentication.getName();
         Formateur formateur = formateurService.getFormateurByUsername(username);

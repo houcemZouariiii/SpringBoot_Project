@@ -2,15 +2,12 @@ package com.iit.projetjee.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +15,7 @@ import org.springframework.context.annotation.Lazy;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -40,12 +38,15 @@ public class SecurityConfig {
                 // Routes publiques
                 .requestMatchers("/", "/h2-console/**", "/css/**", "/js/**", "/images/**", 
                                "/api/auth/**", "/login", "/error", "/public/**").permitAll()
-                // Routes admin
+                // Routes admin dashboard
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                // Routes formateur
-                .requestMatchers("/formateur/**").hasAnyRole("FORMATEUR", "ADMIN")
-                // Routes étudiant
-                .requestMatchers("/etudiant/**").hasAnyRole("ETUDIANT", "ADMIN")
+                // Dashboards spécifiques (doivent être avant les routes CRUD générales)
+                .requestMatchers("/etudiants/dashboard", "/etudiants/cours/**").hasAnyRole("ETUDIANT", "ADMIN")
+                .requestMatchers("/formateurs/dashboard", "/formateur/dashboard").hasAnyRole("FORMATEUR", "ADMIN")
+                // Routes CRUD - accessibles par ADMIN
+                .requestMatchers("/etudiants/**", "/formateurs/**", "/cours/**", 
+                               "/inscriptions/**", "/notes/**", "/sessions/**", "/seances/**",
+                               "/specialites/**", "/groupes/**").hasRole("ADMIN")
                 // API REST - nécessite authentification
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().authenticated()

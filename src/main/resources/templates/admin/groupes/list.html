@@ -5,6 +5,9 @@
 <div th:fragment="content">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1><i class="bi bi-people"></i> Groupes</h1>
+        <a href="/groupes/new" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nouveau groupe
+        </a>
     </div>
     <div class="row">
         <div class="col-lg-7">
@@ -19,6 +22,7 @@
                                 <th>Type</th>
                                 <th>Session</th>
                                 <th>Spécialité</th>
+                                <th>Étudiants</th>
                                 <th>Actions</th>
                             </tr>
                             </thead>
@@ -30,39 +34,23 @@
                                 <td th:text="${g.session != null ? g.session.libelle : '-'}"></td>
                                 <td th:text="${g.specialite != null ? g.specialite.libelle : '-'}"></td>
                                 <td>
-                                    <form th:action="@{'/admin/groupes/' + ${g.id}}" method="post" class="row g-1 align-items-start">
-                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                                        <div class="col-3">
-                                            <input type="text" class="form-control form-control-sm" name="code" th:value="${g.code}" required>
-                                        </div>
-                                        <div class="col-3">
-                                            <input type="text" class="form-control form-control-sm" name="nom" th:value="${g.nom}">
-                                        </div>
-                                        <div class="col-2">
-                                            <select class="form-select form-select-sm" name="typeGroupe">
-                                                <option th:each="t : ${types}" th:value="${t}" th:selected="${t == g.typeGroupe}" th:text="${t}"></option>
-                                            </select>
-                                        </div>
-                                        <div class="col-2">
-                                            <select class="form-select form-select-sm" name="session.id">
-                                                <option value="">Session</option>
-                                                <option th:each="s : ${sessions}" th:value="${s.id}" th:selected="${g.session != null && g.session.id == s.id}" th:text="${s.libelle}"></option>
-                                            </select>
-                                        </div>
-                                        <div class="col-2">
-                                            <select class="form-select form-select-sm" name="specialite.id">
-                                                <option value="">Spécialité</option>
-                                                <option th:each="sp : ${specialites}" th:value="${sp.id}" th:selected="${g.specialite != null && g.specialite.id == sp.id}" th:text="${sp.libelle}"></option>
-                                            </select>
-                                        </div>
-                                        <div class="col-12 d-flex gap-1 mt-1">
-                                            <button class="btn btn-sm btn-warning" title="Mettre à jour"><i class="bi bi-save"></i></button>
-                                            <form th:action="@{'/admin/groupes/' + ${g.id} + '/delete'}" method="post" class="d-inline">
-                                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                                                <button class="btn btn-sm btn-danger" onclick="return confirm('Supprimer ?')" title="Supprimer"><i class="bi bi-trash"></i></button>
-                                            </form>
-                                        </div>
-                                    </form>
+                                    <span class="badge bg-info" th:text="${g.etudiants != null ? g.etudiants.size() : 0} + ' étudiant(s)'"></span>
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <a th:href="@{/groupes/{id}/etudiants(id=${g.id})}" class="btn btn-sm btn-primary" title="Gérer les étudiants">
+                                            <i class="bi bi-people"></i>
+                                        </a>
+                                        <a th:href="@{/groupes/{id}/edit(id=${g.id})}" class="btn btn-sm btn-warning" title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form th:action="@{/groupes/{id}/delete(id=${g.id})}" method="post" class="d-inline">
+                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce groupe ?')" title="Supprimer">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                             </tbody>
@@ -75,7 +63,7 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Nouveau groupe</h5>
-                    <form action="/admin/groupes" method="post" class="row g-2">
+                    <form action="/groupes" method="post" class="row g-2">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                         <div class="col-6">
                             <label class="form-label">Code</label>
@@ -93,14 +81,14 @@
                         </div>
                         <div class="col-6">
                             <label class="form-label">Session</label>
-                            <select class="form-select" name="session.id">
+                            <select class="form-select" name="sessionId">
                                 <option value="">Sélectionner</option>
                                 <option th:each="s : ${sessions}" th:value="${s.id}" th:text="${s.libelle}"></option>
                             </select>
                         </div>
                         <div class="col-12">
                             <label class="form-label">Spécialité</label>
-                            <select class="form-select" name="specialite.id">
+                            <select class="form-select" name="specialiteId">
                                 <option value="">Sélectionner</option>
                                 <option th:each="sp : ${specialites}" th:value="${sp.id}" th:text="${sp.libelle}"></option>
                             </select>

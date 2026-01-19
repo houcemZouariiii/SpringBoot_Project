@@ -1,11 +1,10 @@
-package com.iit.projetjee.controller.admin;
+package com.iit.projetjee.controller;
 
 import com.iit.projetjee.entity.Etudiant;
-import com.iit.projetjee.service.EmailService;
-import com.iit.projetjee.service.EtudiantService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.iit.projetjee.service.IAdminEmailService;
+import com.iit.projetjee.service.IEtudiantService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -20,35 +19,33 @@ import java.util.stream.Collectors;
 @RequestMapping("/admin/emails")
 public class AdminEmailController {
 
-    private static final Logger logger = LoggerFactory.getLogger(AdminEmailController.class);
-
-    private final EmailService emailService;
-    private final EtudiantService etudiantService;
+    private final IAdminEmailService emailService;
+    private final IEtudiantService etudiantService;
 
     @Autowired
-    public AdminEmailController(EmailService emailService, EtudiantService etudiantService) {
+    public AdminEmailController(IAdminEmailService emailService, 
+                               IEtudiantService etudiantService) {
         this.emailService = emailService;
         this.etudiantService = etudiantService;
     }
 
     @GetMapping("/send")
+    @PreAuthorize("hasRole('ADMIN')")
     public String showEmailForm(Model model) {
-        model.addAttribute("etudiants", etudiantService.getAllEtudiants());
+        // Récupérer tous les étudiants pour l'administration
+        List<Etudiant> etudiants = etudiantService.getAllEtudiants();
+        model.addAttribute("etudiants", etudiants);
         return "admin/emails/send";
     }
 
     @PostMapping("/send")
+    @PreAuthorize("hasRole('ADMIN')")
     public String sendEmail(@RequestParam(required = false) List<Long> etudiantIds,
                            @RequestParam(required = false) String emailTo,
                            @RequestParam String subject,
                            @RequestParam String message,
                            RedirectAttributes redirectAttributes) {
         try {
-            // Log pour debug
-            logger.info("DEBUG - etudiantIds reçus: {}", etudiantIds);
-            logger.info("DEBUG - emailTo reçu: {}", emailTo);
-            logger.info("DEBUG - subject: {}", subject);
-            
             if (etudiantIds != null && !etudiantIds.isEmpty()) {
                 // Envoyer à plusieurs étudiants
                 List<String> recipients = etudiantIds.stream()
@@ -85,4 +82,3 @@ public class AdminEmailController {
         return "redirect:/admin/emails/send";
     }
 }
-
