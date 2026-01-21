@@ -156,6 +156,13 @@
         });
         
         function loadEtudiants(coursId) {
+            if (!coursId) {
+                etudiantSelect.innerHTML = '<option value="">Sélectionner d\'abord un cours</option>';
+                etudiantSelect.disabled = true;
+                etudiantHelp.textContent = 'Sélectionnez d\'abord un cours pour voir les étudiants inscrits';
+                return;
+            }
+            
             etudiantSelect.disabled = true;
             etudiantSelect.innerHTML = '<option value="">Chargement...</option>';
             etudiantHelp.textContent = 'Chargement des étudiants...';
@@ -165,17 +172,52 @@
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
-                }
+                },
+                credentials: 'same-origin'
             })
                 .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Erreur HTTP: ' + response.status + ' ' + response.statusText);
+                    // Vérifier si la réponse a du contenu
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        // Si ce n'est pas du JSON, vérifier le statut
+                        if (!response.ok) {
+                            throw new Error('Erreur HTTP: ' + response.status + ' ' + response.statusText);
+                        }
+                        // Si pas de contenu JSON, retourner un tableau vide
+                        return [];
                     }
-                    return response.json();
+                    
+                    // Cloner la réponse pour pouvoir la lire plusieurs fois si nécessaire
+                    return response.clone().text().then(text => {
+                        // Si la réponse est vide, retourner un tableau vide
+                        if (!text || text.trim() === '') {
+                            if (!response.ok) {
+                                throw new Error('Erreur HTTP: ' + response.status);
+                            }
+                            return [];
+                        }
+                        
+                        // Parser le JSON
+                        try {
+                            const data = JSON.parse(text);
+                            if (!response.ok) {
+                                // Si la réponse contient une erreur
+                                const errorMessage = data.error || 'Erreur HTTP: ' + response.status;
+                                throw new Error(errorMessage);
+                            }
+                            return data;
+                        } catch (parseError) {
+                            console.error('Erreur de parsing JSON:', parseError);
+                            if (!response.ok) {
+                                throw new Error('Erreur HTTP: ' + response.status + ' - ' + text);
+                            }
+                            return [];
+                        }
+                    });
                 })
                 .then(etudiants => {
                     etudiantSelect.innerHTML = '<option value="">Sélectionner un étudiant</option>';
-                    if (etudiants && etudiants.length > 0) {
+                    if (etudiants && Array.isArray(etudiants) && etudiants.length > 0) {
                         etudiants.forEach(etudiant => {
                             const option = document.createElement('option');
                             option.value = etudiant.id;
@@ -194,7 +236,7 @@
                     console.error('Erreur lors du chargement des étudiants:', error);
                     etudiantSelect.innerHTML = '<option value="">Erreur lors du chargement</option>';
                     etudiantSelect.disabled = false;
-                    etudiantHelp.textContent = 'Erreur lors du chargement des étudiants: ' + error.message;
+                    etudiantHelp.textContent = 'Erreur: ' + (error.message || 'Erreur inconnue');
                 });
         }
         

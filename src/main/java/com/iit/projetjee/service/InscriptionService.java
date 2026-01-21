@@ -174,13 +174,45 @@ public class InscriptionService implements IInscriptionService {
     }
 
     // Obtenir les inscriptions d'un cours
+    @Transactional(readOnly = true)
     public List<Inscription> getInscriptionsByCours(Long coursId) {
-        return inscriptionRepository.findByCoursId(coursId);
+        List<Inscription> inscriptions = inscriptionRepository.findByCoursId(coursId);
+        // Forcer le chargement des étudiants dans la transaction
+        if (inscriptions != null) {
+            inscriptions.forEach(inscription -> {
+                if (inscription.getEtudiant() != null) {
+                    // Forcer le chargement en accédant aux propriétés
+                    inscription.getEtudiant().getId();
+                    inscription.getEtudiant().getNom();
+                    inscription.getEtudiant().getPrenom();
+                }
+            });
+        }
+        return inscriptions;
     }
     
     // Obtenir les inscriptions d'un cours avec les étudiants chargés
+    @Transactional(readOnly = true)
     public List<Inscription> getInscriptionsByCoursWithEtudiant(Long coursId) {
-        return inscriptionRepository.findByCoursIdWithEtudiant(coursId);
+        try {
+            List<Inscription> inscriptions = inscriptionRepository.findByCoursIdWithEtudiant(coursId);
+            // Forcer le chargement des étudiants en accédant à leurs propriétés
+            if (inscriptions != null) {
+                inscriptions.forEach(inscription -> {
+                    if (inscription.getEtudiant() != null) {
+                        // Forcer le chargement en accédant aux propriétés
+                        inscription.getEtudiant().getId();
+                        inscription.getEtudiant().getNom();
+                        inscription.getEtudiant().getPrenom();
+                    }
+                });
+            }
+            return inscriptions;
+        } catch (Exception e) {
+            System.err.println("Erreur dans getInscriptionsByCoursWithEtudiant: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     // Valider une inscription

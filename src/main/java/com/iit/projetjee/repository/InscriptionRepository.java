@@ -27,7 +27,7 @@ public interface InscriptionRepository extends JpaRepository<Inscription, Long> 
     // Recherche par cours ID
     List<Inscription> findByCoursId(Long coursId);
     
-    @Query("SELECT i FROM Inscription i JOIN FETCH i.etudiant WHERE i.cours.id = :coursId")
+    @Query("SELECT DISTINCT i FROM Inscription i JOIN FETCH i.etudiant WHERE i.cours.id = :coursId")
     List<Inscription> findByCoursIdWithEtudiant(@Param("coursId") Long coursId);
 
     // Recherche par statut

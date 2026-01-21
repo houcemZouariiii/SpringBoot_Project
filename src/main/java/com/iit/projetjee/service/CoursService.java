@@ -62,7 +62,8 @@ public class CoursService implements ICoursService {
 
     // Obtenir un cours par ID
     public Cours getCoursById(Long id) {
-        return coursRepository.findById(id)
+        // Utiliser la méthode avec JOIN FETCH pour charger le formateur en une seule requête
+        return coursRepository.findByIdWithFormateur(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cours non trouvé avec l'ID : " + id));
     }
 

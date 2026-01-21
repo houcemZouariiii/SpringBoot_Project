@@ -40,5 +40,9 @@ public interface CoursRepository extends JpaRepository<Cours, Long> {
     // Recherche par titre ou description
     @Query("SELECT c FROM Cours c WHERE LOWER(c.titre) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(c.description) LIKE LOWER(CONCAT('%', :search, '%'))")
     List<Cours> findByTitreOrDescriptionContaining(@Param("search") String search);
+    
+    // Récupérer un cours par ID avec le formateur chargé
+    @Query("SELECT c FROM Cours c LEFT JOIN FETCH c.formateur WHERE c.id = :id")
+    java.util.Optional<Cours> findByIdWithFormateur(@Param("id") Long id);
 }
 

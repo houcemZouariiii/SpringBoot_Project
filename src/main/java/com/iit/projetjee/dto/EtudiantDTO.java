@@ -1,9 +1,18 @@
 package com.iit.projetjee.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class EtudiantDTO {
+    @JsonProperty("id")
     private Long id;
+    
+    @JsonProperty("nom")
     private String nom;
+    
+    @JsonProperty("prenom")
     private String prenom;
+    
+    @JsonProperty("nomComplet")
     private String nomComplet;
 
     public EtudiantDTO() {
@@ -11,9 +20,9 @@ public class EtudiantDTO {
 
     public EtudiantDTO(Long id, String nom, String prenom) {
         this.id = id;
-        this.nom = nom;
-        this.prenom = prenom;
-        this.nomComplet = prenom + " " + nom;
+        this.nom = nom != null ? nom : "";
+        this.prenom = prenom != null ? prenom : "";
+        this.nomComplet = (this.prenom + " " + this.nom).trim();
     }
 
     public Long getId() {

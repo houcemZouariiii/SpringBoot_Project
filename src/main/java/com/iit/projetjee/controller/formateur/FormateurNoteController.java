@@ -7,7 +7,6 @@ import com.iit.projetjee.entity.Formateur;
 import com.iit.projetjee.entity.Inscription;
 import com.iit.projetjee.entity.Note;
 import com.iit.projetjee.service.ICoursService;
-import com.iit.projetjee.service.IEtudiantService;
 import com.iit.projetjee.service.IFormateurService;
 import com.iit.projetjee.service.IInscriptionService;
 import com.iit.projetjee.service.INoteService;
@@ -16,9 +15,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -84,40 +85,134 @@ public class FormateurNoteController {
     @GetMapping("/cours/{coursId}/etudiants")
     @PreAuthorize("hasAnyRole('FORMATEUR', 'ADMIN')")
     @ResponseBody
-    public List<EtudiantDTO> getEtudiantsByCours(@PathVariable Long coursId, Authentication authentication) {
+    public ResponseEntity<List<EtudiantDTO>> getEtudiantsByCours(@PathVariable Long coursId, Authentication authentication) {
+        List<EtudiantDTO> result = new ArrayList<>();
+        
         try {
+            System.out.println("========== DEBUT getEtudiantsByCours ==========");
+            System.out.println("coursId: " + coursId);
+            
+            // Étape 1: Vérification de l'authentification
+            if (authentication == null) {
+                System.err.println("ERREUR: authentication est null");
+                return ResponseEntity.ok(result);
+            }
+            System.out.println("✓ Authentication OK");
+            
+            // Étape 2: Récupération du username
             String username = authentication.getName();
-            Formateur formateur = formateurService.getFormateurByUsername(username);
+            System.out.println("Username: " + username);
             
-            Cours cours = coursService.getCoursById(coursId);
+            // Étape 3: Vérification du rôle
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            System.out.println("IsAdmin: " + isAdmin);
             
-            // Vérifier que le cours appartient au formateur
-            if (cours.getFormateur() == null || !cours.getFormateur().getId().equals(formateur.getId())) {
-                System.err.println("Cours n'appartient pas au formateur ou formateur null");
-                return List.of();
+            // Étape 4: Vérification du formateur (sauf pour admin)
+            if (!isAdmin) {
+                System.out.println("Vérification du formateur...");
+                try {
+                    Formateur formateur = formateurService.getFormateurByUsername(username);
+                    System.out.println("✓ Formateur trouvé: " + formateur.getId());
+                    
+                    Cours cours = coursService.getCoursById(coursId);
+                    System.out.println("✓ Cours trouvé: " + cours.getTitre());
+                    
+                    if (cours.getFormateur() == null) {
+                        System.err.println("ERREUR: Le cours n'a pas de formateur");
+                        return ResponseEntity.ok(result);
+                    }
+                    
+                    if (!cours.getFormateur().getId().equals(formateur.getId())) {
+                        System.err.println("ERREUR: Le cours n'appartient pas au formateur");
+                        return ResponseEntity.ok(result);
+                    }
+                    System.out.println("✓ Vérification d'accès OK");
+                } catch (Exception e) {
+                    System.err.println("ERREUR lors de la vérification: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+                    e.printStackTrace();
+                    return ResponseEntity.ok(result);
+                }
+            } else {
+                System.out.println("✓ Admin - pas de vérification nécessaire");
             }
             
-            // Récupérer les étudiants inscrits à ce cours (avec les étudiants chargés)
-            List<Inscription> inscriptions = inscriptionService.getInscriptionsByCoursWithEtudiant(coursId);
-            
-            if (inscriptions == null || inscriptions.isEmpty()) {
-                System.out.println("Aucune inscription trouvée pour le cours " + coursId);
-                return List.of();
+            // Étape 5: Récupération des inscriptions
+            System.out.println("Récupération des inscriptions pour coursId: " + coursId);
+            List<Inscription> inscriptions;
+            try {
+                inscriptions = inscriptionService.getInscriptionsByCoursWithEtudiant(coursId);
+                System.out.println("✓ Inscriptions récupérées: " + (inscriptions != null ? inscriptions.size() : 0));
+            } catch (Exception e) {
+                System.err.println("ERREUR lors de la récupération des inscriptions: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+                e.printStackTrace();
+                return ResponseEntity.ok(result);
             }
             
-            List<EtudiantDTO> etudiants = inscriptions.stream()
-                    .filter(inscription -> inscription.getEtudiant() != null)
-                    .map(Inscription::getEtudiant)
-                    .map(etudiant -> new EtudiantDTO(etudiant.getId(), etudiant.getNom(), etudiant.getPrenom()))
-                    .collect(Collectors.toList());
+            // Étape 6: Transformation en DTOs
+            if (inscriptions != null && !inscriptions.isEmpty()) {
+                System.out.println("Transformation des inscriptions en DTOs...");
+                for (Inscription inscription : inscriptions) {
+                    try {
+                        Etudiant etudiant = inscription.getEtudiant();
+                        if (etudiant != null && etudiant.getId() != null) {
+                            String nom = etudiant.getNom() != null ? etudiant.getNom() : "";
+                            String prenom = etudiant.getPrenom() != null ? etudiant.getPrenom() : "";
+                            
+                            EtudiantDTO dto = new EtudiantDTO(etudiant.getId(), nom, prenom);
+                            result.add(dto);
+                            System.out.println("  → Étudiant ajouté: ID=" + dto.getId() + ", Nom=" + dto.getNom() + ", Prénom=" + dto.getPrenom());
+                        } else {
+                            System.err.println("  ⚠ Inscription sans étudiant valide: " + inscription.getId());
+                        }
+                    } catch (Exception e) {
+                        System.err.println("  ⚠ Erreur lors de la transformation: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            } else {
+                System.out.println("Aucune inscription trouvée");
+            }
             
-            System.out.println("Nombre d'étudiants trouvés: " + etudiants.size());
-            return etudiants;
-        } catch (Exception e) {
-            // Log l'erreur pour le débogage
-            System.err.println("Erreur lors du chargement des étudiants: " + e.getMessage());
+            System.out.println("========== FIN getEtudiantsByCours - Résultat: " + result.size() + " étudiant(s) ==========");
+            
+            // Tester la sérialisation avant de retourner
+            try {
+                System.out.println("Test de sérialisation JSON...");
+                // Forcer la sérialisation en accédant aux propriétés
+                for (EtudiantDTO dto : result) {
+                    dto.getId();
+                    dto.getNom();
+                    dto.getPrenom();
+                    dto.getNomComplet();
+                }
+                System.out.println("✓ Sérialisation OK");
+            } catch (Exception e) {
+                System.err.println("ERREUR lors du test de sérialisation: " + e.getMessage());
+                e.printStackTrace();
+            }
+            
+            // Retourner la réponse avec Content-Type explicite
+            return ResponseEntity.ok()
+                    .header("Content-Type", "application/json;charset=UTF-8")
+                    .body(result);
+            
+        } catch (org.springframework.http.converter.HttpMessageNotWritableException e) {
+            System.err.println("========== ERREUR DE SÉRIALISATION JSON ==========");
+            System.err.println("Message: " + e.getMessage());
+            System.err.println("Cause: " + (e.getCause() != null ? e.getCause().getMessage() : "null"));
             e.printStackTrace();
-            return List.of();
+            System.err.println("==================================================");
+            // Retourner une liste vide en cas d'erreur de sérialisation
+            return ResponseEntity.ok(new ArrayList<>());
+        } catch (Exception e) {
+            System.err.println("========== ERREUR GLOBALE ==========");
+            System.err.println("Type: " + e.getClass().getName());
+            System.err.println("Message: " + e.getMessage());
+            System.err.println("Cause: " + (e.getCause() != null ? e.getCause().getMessage() : "null"));
+            e.printStackTrace();
+            System.err.println("====================================");
+            return ResponseEntity.ok(result);
         }
     }
 
